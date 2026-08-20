@@ -1,0 +1,121 @@
+# =====================================================================
+#  MEDICAL KNOWLEDGE BASE
+#  Owner: Joaquin
+#
+#  READ THIS BEFORE EDITING
+#  ------------------------
+#  Every entry MUST have a non-empty `source`. The test suite FAILS on
+#  any rule with a blank source. This is deliberate.
+#
+#  A source is one of:
+#    - A published triage protocol (START, Manchester Triage)
+#    - A NASA / NIH / MedlinePlus publication (give the URL)
+#    - A named qualified reviewer ("Reviewed by [Name], RN, 2026-09-15")
+#
+#  "I looked it up online" is NOT a source. "ChatGPT said so" is NOT a
+#  source. If we cannot cite it, we do not ship it.
+#
+#  The entries below are STRUCTURAL EXAMPLES ONLY. Their medical content
+#  is a placeholder so the engine has something to parse. Joaquin must
+#  replace every one of them with sourced content before PDR.
+# =====================================================================
+
+meta:
+  version: "0.1.0-placeholder"
+  last_reviewed_by: ""        # name + credential of the human who checked this
+  last_reviewed_date: ""      # YYYY-MM-DD
+  status: "PLACEHOLDER — NOT REVIEWED — NOT FOR USE"
+
+# ---------------------------------------------------------------------
+# SYMPTOMS
+# The vocabulary the crew terminal offers. Plain language only.
+# No medical jargon — the user is not a doctor.
+# ---------------------------------------------------------------------
+symptoms:
+  - id: headache
+    prompt: "Headache"
+    body_region: head
+  - id: dizziness
+    prompt: "Dizzy or lightheaded"
+    body_region: head
+  - id: nausea
+    prompt: "Feeling sick to your stomach"
+    body_region: abdomen
+  - id: shortness_of_breath
+    prompt: "Hard to breathe"
+    body_region: chest
+    red_flag: true
+  - id: chest_pain
+    prompt: "Pain in your chest"
+    body_region: chest
+    red_flag: true
+  - id: vision_change
+    prompt: "Vision looks different than normal"
+    body_region: head
+  - id: fatigue
+    prompt: "Unusually tired"
+    body_region: general
+  - id: confusion
+    prompt: "Trouble thinking clearly"
+    body_region: head
+    red_flag: true
+
+# ---------------------------------------------------------------------
+# RULES
+# match_all  = every listed symptom must be present
+# match_any  = at least one must be present
+# exclude    = if any of these are present, this rule does not fire
+# weight     = contribution to confidence (0.0 - 1.0)
+# ---------------------------------------------------------------------
+rules:
+  - id: EXAMPLE_001
+    category: "PLACEHOLDER — replace me"
+    match_all: [headache, fatigue]
+    exclude: [confusion]
+    weight: 0.4
+    procedure: "PLACEHOLDER. Real procedure text goes here, written for someone with no medical training."
+    source: ""          # <-- EMPTY ON PURPOSE. Test suite will fail until filled.
+
+  - id: EXAMPLE_002
+    category: "PLACEHOLDER — replace me"
+    match_any: [dizziness, vision_change]
+    weight: 0.3
+    procedure: "PLACEHOLDER."
+    source: ""
+
+# ---------------------------------------------------------------------
+# ESCALATION
+# When the system must STOP and defer to Earth.
+# This is the most important section in the file.
+# ---------------------------------------------------------------------
+escalation:
+  # Any of these symptoms triggers immediate escalation regardless of
+  # what the rules say.
+  always_escalate_symptoms:
+    - chest_pain
+    - shortness_of_breath
+    - confusion
+
+  # If the top match scores below this, we do not guess.
+  min_confidence: 0.35
+
+  # If two or more categories score within this margin of each other,
+  # the system is not confident enough to pick one.
+  ambiguity_margin: 0.10
+
+  message: >
+    STOP. This system cannot safely assess what you are describing.
+    Follow the emergency procedure in the crew medical handbook and
+    contact Earth as soon as a communication window opens.
+
+# ---------------------------------------------------------------------
+# LIMITATIONS
+# Documented honestly. This appears in the UI and in the FDR packet.
+# ---------------------------------------------------------------------
+limitations:
+  - "Cannot analyze images, scans, or ultrasound."
+  - "Cannot measure vital signs — it only knows what the user types in."
+  - "Cannot recommend medication or dosages."
+  - "Cannot diagnose rare conditions or anything outside its rule set."
+  - "Has never been tested on real patients and never will be."
+  - "Is not a certified medical device."
