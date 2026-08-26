@@ -4,14 +4,14 @@ Built 21 Aug 2026. Rearchitected the same day: **ollama is the reasoner, the KB 
 14 conditions, 72 findings, 111 tests passing.
 
 ## Architecture (current)
-`python -m vitals serve` opens the web UI. `python -m vitals ask "..."` is the same pipeline on the CLI. Pipeline: extract findings -> retrieve
+`python -m mdx serve` opens the web UI. `python -m mdx ask "..."` is the same pipeline on the CLI. Pipeline: extract findings -> retrieve
 relevant KB conditions -> attach sensor readings (none yet) -> ollama answers ->
 citations looked up from the KB, never written by the model.
 
 The deterministic engine is now a **cross-check** (`--crosscheck`), not the answer.
 Its weights were invented and the model never sees them.
 
-Sensors: `src/vitals/sensors.py` defines the contract and implements nothing, because
+Sensors: `src/mdx/sensors.py` defines the contract and implements nothing, because
 no hardware is attached. It reports "no sensors connected" and returns no readings.
 It does NOT fabricate a plausible vital sign.
 
@@ -45,7 +45,7 @@ Then make an EMPTY repo at github.com/new and push. Add Cruz and Joaquin.
 1. `git init`, first commit, push. Nothing here is backed up yet.
 2. Joaquin reviews every weight in `kb/conditions/`. He does not need to touch
    Python — see the checklist at the end of `KNOWLEDGE_BASE_FORMAT.md`.
-3. Cruz runs `python -m vitals describe "..."` with the way *real people* actually
+3. Cruz runs `python -m mdx describe "..."` with the way *real people* actually
    describe symptoms. Every phrase it misses is a test case. That is genuine
    user-testing data for the portfolio, not busywork.
 

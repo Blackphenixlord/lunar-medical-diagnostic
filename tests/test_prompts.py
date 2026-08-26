@@ -8,13 +8,13 @@ people believe.
 import pytest
 import yaml
 
-from vitals import load_knowledge_base
-from vitals.bench import Report, load_prompts, prompts_path, run_one
+from mdx import load_kb
+from mdx.bench import Report, load_prompts, prompts_path, run_one
 
 
 @pytest.fixture(scope="module")
 def kb():
-    return load_knowledge_base()
+    return load_kb()
 
 
 @pytest.fixture(scope="module")
@@ -84,7 +84,7 @@ def test_prompts_are_written_like_people_talk(prompts):
 def test_hit_and_refusal_are_scored_separately():
     """The whole point. A system that always names something must score 100%
     hits and 0% refusals, and the report has to show that plainly."""
-    from vitals.bench import Outcome
+    from mdx.bench import Outcome
     r = Report()
     r.outcomes = [
         Outcome("a", "classic", "renal_stone", "renal_stone", True, True, True, 1.0),
@@ -100,7 +100,7 @@ def test_hit_and_refusal_are_scored_separately():
 def test_missed_escalation_is_tracked_separately_from_a_wrong_answer():
     """Naming the wrong condition is bad. Failing to escalate is the one that
     hurts someone, so it gets its own counter."""
-    from vitals.bench import Outcome
+    from mdx.bench import Outcome
     o = Outcome("x", "classic", "renal_stone", "renal_stone", True, True, False, 1.0)
     assert o.hit is True
     assert o.missed_escalation is True
@@ -110,7 +110,7 @@ def test_missed_escalation_is_tracked_separately_from_a_wrong_answer():
 
 
 def test_escalating_unnecessarily_is_not_counted_as_a_failure():
-    from vitals.bench import Outcome
+    from mdx.bench import Outcome
     o = Outcome("x", "classic", "sans", "sans", True, False, True, 1.0)
     assert o.escalation_ok is True
     assert o.missed_escalation is False

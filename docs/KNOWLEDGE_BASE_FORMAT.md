@@ -28,7 +28,7 @@ YAML against `kb/schema/condition.schema.json` and get both benefits.
 
 YAML has sharp edges: `no` used to parse as boolean false in older parsers, and
 an unquoted string containing `: ` breaks the parse. We hit the second one
-during the build. Guard rails: `python -m vitals validate` runs in CI, and
+during the build. Guard rails: `python -m mdx validate` runs in CI, and
 `tests/test_kb.py` fails the build on a malformed rule.
 
 ---
@@ -208,7 +208,7 @@ something*. Set it when denial is informative; leave it at 0 otherwise.
    this condition, it probably does not belong in this knowledge base.
 4. Add findings. Any new one goes into `findings.yaml` first.
 5. Add at least one real source with a URL.
-6. Run `python -m vitals validate`, then `pytest tests -q`.
+6. Run `python -m mdx validate`, then `pytest tests -q`.
 7. Add a case in `cases/` with `expect_top:` set. It becomes a regression test
    automatically — `tests/test_engine.py` picks up every file in that folder.
 

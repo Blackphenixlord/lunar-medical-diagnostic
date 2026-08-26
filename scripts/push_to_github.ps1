@@ -25,14 +25,21 @@ if (-not (Test-Path ".\src\vitals\__init__.py")) {
     exit 1
 }
 
-# --- leftover from the first, broken git attempt ----------------------------
-# The very first `git init` went through the Claude device bridge, which cannot
-# delete files, so it left a stuck .git\index.lock behind. That dead repo was
-# moved aside rather than deleted. Nothing needs it.
+# --- leftovers from working over the Claude device bridge -------------------
+# The bridge cannot delete files, so anything that needed deleting was moved
+# into _to_delete\ instead: the old src\mdx package, the first broken .git,
+# the retired init_git.ps1. None of it is needed. Same reason a stale
+# .git\index.lock can be lying around - git on Linux could not remove it.
 
+if (Test-Path "_to_delete") {
+    Write-Host "Removing _to_delete\ (leftovers, safe to lose) ..." -ForegroundColor Yellow
+    Remove-Item -Recurse -Force "_to_delete"
+}
 if (Test-Path "_broken_git_MOVE_ME") {
-    Write-Host "Removing the old broken repo folder ..." -ForegroundColor Yellow
     Remove-Item -Recurse -Force "_broken_git_MOVE_ME"
+}
+if (Test-Path ".git\index.lock") {
+    Remove-Item -Force ".git\index.lock"
 }
 
 # --- local history ----------------------------------------------------------
@@ -46,6 +53,10 @@ if (-not (Test-Path ".git")) {
 git config user.name  "Joshua Collado"
 git config user.email "joshuacollado636@gmail.com"
 git config core.autocrlf false
+
+# The repo was last written from a Linux mount, which marks every file
+# executable. Without this, git reports all 65 files as modified for no reason.
+git config core.filemode false
 
 git add -A
 

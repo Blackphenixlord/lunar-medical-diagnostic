@@ -5,7 +5,7 @@ NOTHING. A fabricated vital sign is worse than a missing one - a missing one
 makes the model ask, a fake one makes it conclude.
 """
 
-from vitals import sensors
+from mdx import sensors
 
 
 def test_nothing_is_registered_because_nothing_is_plugged_in():
@@ -36,8 +36,8 @@ def test_a_broken_sensor_cannot_take_the_tool_down(monkeypatch):
 
 def test_readings_map_onto_real_finding_ids():
     """When hardware does arrive, its output has to be a finding the KB knows."""
-    from vitals import load_knowledge_base
-    kb = load_knowledge_base()
+    from mdx import load_kb
+    kb = load_kb()
     r = sensors.Reading(finding="fever", value=38.4, unit="C", source="test")
     assert r.finding in kb.findings
     assert sensors.as_observations([r]) == {"fever": 38.4}

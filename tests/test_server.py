@@ -14,13 +14,13 @@ from urllib.error import HTTPError
 
 import pytest
 
-from vitals import load_knowledge_base
-from vitals.server import Handler, UI_DIR, _run_pipeline
+from mdx import load_kb
+from mdx.server import Handler, UI_DIR, _run_pipeline
 
 
 @pytest.fixture(scope="module")
 def kb():
-    return load_knowledge_base()
+    return load_kb()
 
 
 @pytest.fixture(scope="module")
@@ -38,7 +38,7 @@ def server(kb):
 
 def test_index_is_served(server):
     body = urlopen(server + "/").read().decode()
-    assert "<title>VITALS" in body
+    assert "<title>MDX" in body
 
 
 def test_page_says_it_is_not_a_diagnosis(server):

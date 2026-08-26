@@ -10,15 +10,15 @@ import os
 
 import pytest
 
-from vitals import load_knowledge_base
-from vitals.extract import KeywordExtractor
-from vitals.reason import OllamaUnavailable, ask
-from vitals.retrieval import retrieve, as_context
+from mdx import load_kb
+from mdx.llm import KeywordExtractor
+from mdx.reason import OllamaUnavailable, ask
+from mdx.retrieval import retrieve, as_context
 
 
 @pytest.fixture(scope="module")
 def kb():
-    return load_knowledge_base()
+    return load_kb()
 
 
 @pytest.fixture
@@ -163,8 +163,8 @@ def test_clear_error_when_ollama_is_not_running(kb, renal_setup):
 # --- pulling a model without the CLI ---------------------------------------
 
 def test_pull_reports_progress_and_finishes(monkeypatch):
-    """`vitals pull` exists so a broken Windows PATH cannot block the project."""
-    from vitals.reason import pull_model
+    """`mdx pull` exists so a broken Windows PATH cannot block the project."""
+    from mdx.reason import pull_model
     lines = [
         b'{"status":"pulling manifest"}\n',
         b'{"status":"downloading","total":100,"completed":50}\n',
@@ -185,7 +185,7 @@ def test_pull_reports_progress_and_finishes(monkeypatch):
 
 
 def test_pull_surfaces_a_server_side_error(monkeypatch):
-    from vitals.reason import OllamaUnavailable, pull_model
+    from mdx.reason import OllamaUnavailable, pull_model
 
     class _Resp:
         def __iter__(self): return iter([b'{"error":"model not found"}\n'])
@@ -200,13 +200,13 @@ def test_pull_surfaces_a_server_side_error(monkeypatch):
 def test_error_messages_point_at_the_server_not_the_PATH(kb, renal_setup):
     """The `ollama` command being missing is a Windows PATH quirk, not a
     blocker. Every message must send you to the app, not to PATH debugging."""
-    from vitals.reason import OllamaUnavailable, ask
+    from mdx.reason import OllamaUnavailable, ask
     text, retrieved = renal_setup
     with pytest.raises(OllamaUnavailable) as e:
         ask(kb, text, retrieved, host="http://127.0.0.1:1", timeout=1.0)
     msg = str(e.value)
     assert "Ollama app" in msg or "system tray" in msg
-    assert "vitals pull" in msg
+    assert "mdx pull" in msg
 
 
 def test_progress_only_redraws_when_something_changed(monkeypatch, capsys):
@@ -214,7 +214,7 @@ def test_progress_only_redraws_when_something_changed(monkeypatch, capsys):
     second. Redrawing on every one, in a narrow terminal where the bar wrapped,
     turned a single progress bar into ~600 lines of garbage."""
     import sys as _sys
-    from vitals.cli import cmd_pull
+    from mdx.cli import cmd_pull
 
     events = []
     # same percentage reported 50 times, then a new one
@@ -248,7 +248,7 @@ def test_progress_line_fits_a_narrow_terminal(monkeypatch, capsys):
     start of the wrapped line instead of the original one."""
     import shutil
     import sys as _sys
-    from vitals.cli import cmd_pull
+    from mdx.cli import cmd_pull
 
     monkeypatch.setattr(shutil, "get_terminal_size", lambda *a: os.terminal_size((45, 20)))
     events = [b'{"status":"downloading","total":100,"completed":50}\n', b'{"status":"success"}\n']
@@ -350,7 +350,7 @@ def test_prompt_tells_the_model_what_is_already_known(kb, renal_setup, monkeypat
 
 def test_system_prompt_demands_more_than_one_candidate(kb):
     """A differential with one entry is not a differential. Real run gave 1 of 7."""
-    from vitals.reason import SYSTEM_PROMPT as SYSTEM
+    from mdx.reason import SYSTEM
     assert "is not a differential" in SYSTEM
     assert "2 to 4" in SYSTEM
 
@@ -359,7 +359,7 @@ def test_error_advice_matches_where_the_user_actually_is(kb, renal_setup):
     """Telling someone inside a Docker container to open the Start menu is
     worse than saying nothing - it sends them hunting for a tray icon that
     cannot exist. Found by running the container build."""
-    from vitals.reason import OllamaUnavailable, ask
+    from mdx.reason import OllamaUnavailable, ask
     text, retrieved = renal_setup
 
     with pytest.raises(OllamaUnavailable) as local:

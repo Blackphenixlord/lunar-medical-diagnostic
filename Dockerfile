@@ -1,16 +1,16 @@
-# VITALS - spaceflight medical decision support
-# Team TETHER, NASA HUNCH 2026-27
+# MDX — spaceflight medical diagnostic decision support
+# NASA HUNCH 2026-27
 #
-# This image is the ENGINE, the KNOWLEDGE BASE and the UI. The language model
-# lives in its own image (docker/ollama.Dockerfile) because it is gigabytes and
-# you do not want to rebuild that every time Joaquin edits a rule.
+# This image contains the ENGINE and the UI only. The language model lives in a
+# separate ollama container (see docker-compose.yml) because it is 2GB+ and you
+# do not want to rebuild it every time you edit a rule.
 #
-#   docker compose build     once, with a network
-#   docker compose up        -> http://localhost:8000
+#   docker compose up
+#   -> http://localhost:8000
 
 FROM python:3.12-slim
 
-# tini gives us correct signal handling, so Ctrl-C actually stops the server
+# Tini gives us correct signal handling, so Ctrl-C actually stops the server
 # instead of leaving a zombie holding port 8000.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends tini curl \
@@ -22,9 +22,9 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY src/     ./src/
-COPY kb/      ./kb/
-COPY cases/   ./cases/
+COPY src/    ./src/
+COPY kb/     ./kb/
+COPY cases/  ./cases/
 COPY prompts/ ./prompts/
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
@@ -32,19 +32,21 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 ENV PYTHONPATH=/app/src \
     PYTHONUNBUFFERED=1 \
     OLLAMA_HOST=http://ollama:11434 \
-    VITALS_OLLAMA_MODEL=llama3.2
+    MDX_OLLAMA_MODEL=llama3.2
 
 EXPOSE 8000
 
 # Fail the build if the knowledge base is broken. A container that starts with
 # an invalid KB is worse than one that refuses to build.
-RUN python -m vitals validate
+RUN python -m mdx validate
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD curl -fsS http://localhost:8000/api/health || exit 1
 
-ENTRYPOINT ["/usr/sbin/tini", "--", "/usr/local/bin/entrypoint.sh"]
+# tini lives in /usr/bin on Debian slim, NOT /usr/sbin. Getting this wrong
+# means the container never starts at all - caught by actually building it.
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/entrypoint.sh"]
 
-# 0.0.0.0, not 127.0.0.1. Inside a container localhost means "this container",
+# 0.0.0.0, not 127.0.0.1. Inside a container, localhost means "this container",
 # so binding to loopback would make the UI unreachable from your browser.
-CMD ["python", "-m", "vitals", "serve", "--host", "0.0.0.0", "--port", "8000", "--no-open"]
+CMD ["python", "-m", "mdx", "serve", "--host", "0.0.0.0", "--port", "8000", "--no-open"]
