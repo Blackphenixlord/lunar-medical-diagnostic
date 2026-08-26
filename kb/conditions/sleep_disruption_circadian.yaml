@@ -1,0 +1,64 @@
+id: sleep_disruption_circadian
+name: Circadian Desynchrony and Sleep Disruption
+aka: [space insomnia, circadian misalignment]
+category: sleep
+urgency: monitor
+prior: 0.50
+
+description: >
+  Chronic short or fragmented sleep with daytime cognitive impairment, driven
+  by circadian misalignment rather than by any primary sleep disorder.
+
+microgravity_note: >
+  Sixteen sunrises a day destroys every natural light cue, and mission
+  planning routinely slams the crew's schedule for dockings and EVAs. NASA
+  reports difficulties with sleep affect MORE THAN HALF of all US crews, and
+  the SDMIF model predicted roughly 51 +/- 39 sleep-medication doses per
+  astronaut per ISS increment. Disrupted sleep is closer to the default state
+  of long-duration spaceflight than to a disease. Its danger is
+  indirect: inattention, slowed reaction time and poor decision-making during
+  critical operations.
+
+findings:
+  - finding: sleep_hours
+    weight: 2.2
+    absent_weight: -1.5
+    note: findings.yaml sets direction low, so FEWER hours = more support. 6 h/24 h is the operational threshold.
+  - finding: difficulty_falling_asleep
+    weight: 1.5
+  - finding: sleep_aid_use
+    weight: 1.8
+  - finding: schedule_shifted
+    weight: 1.6
+  - finding: cognitive_slowing
+    weight: 1.7
+    note: This is the finding that makes it an operational risk, not just a comfort issue.
+  - finding: fatigue
+    weight: 1.4
+  - finding: irritability
+    weight: 1.0
+  - finding: headache
+    weight: 0.4
+  - finding: fever
+    weight: -1.5
+  - finding: flank_pain
+    weight: -1.0
+
+red_flags: [cognitive_slowing]
+
+recommend:
+  - Enforce the blue-enriched lighting schedule; the ISS solid-state lighting exists precisely for this.
+  - Protect the sleep period - no non-critical tasking inside it.
+  - Log actual sleep hours nightly rather than relying on recall.
+  - Flag to the flight surgeon before any high-consequence operation (EVA, docking, robotics) if sleep has been under 6 h for multiple days.
+  - Treat sleep-aid use as a data point to trend, not a solution.
+
+differential: [urti, sans]
+
+sources:
+  - title: "Medical Operations and Clinical Care - NASA"
+    url: "https://www.nasa.gov/reference/medical-operations-and-clinical-care/"
+    note: Circadian desynchrony causes inattention, slowed reaction time, poor decision-making, distraction.
+  - title: "Sleep Disruption and Medical Intervention Forecasting - NASA NTRS"
+    url: "https://ntrs.nasa.gov/api/citations/20110008743/downloads/20110008743.pdf"
+    note: Sleep difficulty affects more than half of US crews; ~51 +/- 39 doses per astronaut per increment.

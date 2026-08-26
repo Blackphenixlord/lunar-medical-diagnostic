@@ -1,0 +1,16 @@
+title: "FD 30 - one-sided neck swelling with shortness of breath (low probability, must not be missed)"
+narrative: >
+  Flight day 30. The left side of my neck looks swollen compared to the right.
+  I am a little short of breath and my chest feels tight. Ultrasound shows the
+  internal jugular does not compress.
+expect_top: jugular_vte
+observations:
+  neck_swelling: true
+  jugular_distension: true
+  shortness_of_breath: true
+  chest_pain: true
+  facial_fullness: true
+  hr_elevated: 104
+  fever: 36.9
+  congestion_since_arrival: false
+  mission_elapsed_days: 30

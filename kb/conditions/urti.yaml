@@ -1,0 +1,63 @@
+id: urti
+name: Upper Respiratory Tract Infection
+aka: [URI, common cold, space cold]
+category: infectious
+urgency: routine
+prior: 0.10
+
+description: >
+  Viral infection of the upper airway. Sore throat, congestion, cough,
+  malaise, sometimes low-grade fever.
+
+microgravity_note: >
+  Crew arrive pre-screened by the Health Stabilization Program specifically to
+  keep respiratory and enteric infections off the vehicle, so the on-orbit
+  base rate is lower than on Earth. But closed-loop air, no true isolation,
+  and altered immune function mean anything that does get aboard spreads to
+  the whole crew. A new URTI in one crewmember is a crew-wide operational
+  problem, not just a personal one.
+
+findings:
+  - finding: sore_throat
+    weight: 2.0
+    absent_weight: -1.0
+  - finding: nasal_congestion
+    weight: 1.0
+    note: Low weight - fluid shift causes this too.
+  - finding: congestion_since_arrival
+    weight: -2.0
+    note: If it never had a distinct onset it is probably not an infection.
+  - finding: cough
+    weight: 1.6
+  - finding: fever
+    weight: 2.2
+    absent_weight: -0.8
+    note: No fever mildly argues against infection, but plenty of colds run afebrile.
+  - finding: malaise
+    weight: 1.4
+  - finding: fatigue
+    weight: 1.0
+  - finding: purulent_discharge
+    weight: 1.2
+  - finding: shortness_of_breath
+    weight: 0.6
+  - finding: flank_pain
+    weight: -1.0
+
+red_flags: [shortness_of_breath, fever]
+
+recommend:
+  - Symptomatic care only - it is viral until proven otherwise. Do not burn antibiotics.
+  - Isolate the crewmember's exercise and meal timing where the schedule allows; a closed vehicle has no real isolation.
+  - Log daily temperature and symptom scores; a fever curve that climbs past day 4 changes the picture.
+  - Notify the flight surgeon - crew-wide exposure is an operational decision, not a medical one.
+  - Escalate for shortness of breath, chest pain, or temperature above 38.5 C.
+
+differential: [sinonasal_congestion, space_motion_sickness]
+
+sources:
+  - title: "Infections in long-duration space missions - ScienceDirect"
+    url: "https://www.sciencedirect.com/science/article/pii/S2666524724000983"
+  - title: "Medical Operations and Clinical Care - NASA"
+    url: "https://www.nasa.gov/reference/medical-operations-and-clinical-care/"
+    note: Health Stabilization Program prevents upper respiratory and enteric infections preflight.

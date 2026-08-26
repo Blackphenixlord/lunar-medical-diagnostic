@@ -1,0 +1,16 @@
+title: "FD 118 - reading is getting harder"
+narrative: >
+  Around flight day 118. Reading the procedure cards is getting harder, close up is blurry.
+  Refraction is about 1.0 diopters more hyperopic than my preflight baseline.
+  OCT shows disc edema and choroidal folds. No double vision, no whooshing in my ears.
+expect_top: sans
+observations:
+  blurred_near_vision: true
+  hyperopic_shift: 1.0
+  optic_disc_edema: true
+  choroidal_folds: true
+  cotton_wool_spots: false
+  diplopia: false
+  pulsatile_tinnitus: false
+  mission_elapsed_days: 118
+  headache: true

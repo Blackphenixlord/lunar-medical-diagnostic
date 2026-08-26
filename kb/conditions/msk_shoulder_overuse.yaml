@@ -1,0 +1,58 @@
+id: msk_shoulder_overuse
+name: Shoulder Overuse Injury
+aka: [EVA shoulder, rotator cuff strain]
+category: musculoskeletal
+urgency: routine
+prior: 0.08
+
+description: >
+  Strain or impingement of the shoulder from repetitive loaded work, most
+  often EVA suit operations or resistive exercise.
+
+microgravity_note: >
+  The EMU hard upper torso forces the shoulder into loaded positions it would
+  never see on Earth, and crew push against the suit's pressurized resistance
+  for hours. NASA specifically tracks shoulder injury from EVA suit training.
+  A separate driver is ARED resistive exercise, which crew must do daily to
+  fight bone loss - so the countermeasure for one problem creates another.
+  Musculoskeletal injury is the highest-volume injury category in flight:
+  219 musculoskeletal injuries across roughly 231,725 hours of US in-flight
+  operations.
+
+findings:
+  - finding: shoulder_pain
+    weight: 2.5
+    absent_weight: -2.5
+  - finding: pain_after_eva_training
+    weight: 2.0
+  - finding: pain_after_exercise
+    weight: 1.5
+  - finding: range_of_motion_limited
+    weight: 1.6
+  - finding: numbness_or_weakness
+    weight: 0.6
+    note: Mild is common from impingement. Progressive weakness is a red flag.
+  - finding: fever
+    weight: -1.5
+    note: Fever with joint pain means think infection, not overuse.
+  - finding: flank_pain
+    weight: -0.8
+
+red_flags: [numbness_or_weakness]
+
+recommend:
+  - Rest the joint; substitute lower-body and aerobic exercise to protect the bone-loss countermeasure.
+  - Ice equivalent and NSAIDs per protocol.
+  - Document range of motion in degrees so the trend is measurable across days.
+  - Review EVA task planning and suit sizing with the flight surgeon before the next EVA.
+  - Escalate for progressive weakness, numbness, or pain that wakes the crewmember from sleep.
+
+differential: [msk_back_pain_adaptation]
+
+sources:
+  - title: "Medical Operations and Clinical Care - NASA"
+    url: "https://www.nasa.gov/reference/medical-operations-and-clinical-care/"
+    note: Documents shoulder overuse injuries from EVA suit training activities.
+  - title: "Predictive modelling of in-flight musculoskeletal injury - NASA NTRS"
+    url: "https://ntrs.nasa.gov/api/citations/20110008743/downloads/20110008743.pdf"
+    note: 219 musculoskeletal injuries over 231,724.7 hours of US in-flight operations.

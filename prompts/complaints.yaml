@@ -1,0 +1,308 @@
+# MDX prompt bank
+# ---------------
+# Realistic crewmember complaints for testing the system end to end.
+#
+# WHAT THESE ARE: test INPUTS. Things a person might plausibly say, written the
+# way people actually talk - terse, rambling, with denials, with typos.
+#
+# WHAT THESE ARE NOT: evidence, patient records, or data about anyone real.
+# Nothing here is presented as a fact about a real crewmember, and none of it
+# is used to justify a rule. The rules are justified by the sources in
+# kb/conditions/*.yaml. These sentences only exercise the pipeline.
+#
+# expect: the condition id the top answer SHOULD be, or `none` when the right
+#         answer is "nothing in the knowledge base fits".
+# escalate: true when a flight surgeon should be pulled in.
+# why: what this prompt is testing. If you cannot say why, it does not belong.
+#
+# Add to this file whenever someone phrases something in a way MDX misses.
+# That is the single most useful contribution a non-programmer can make.
+
+version: 1
+
+prompts:
+
+  # ---------- classic presentations: the easy ones must never break ----------
+
+  - id: sms_classic
+    category: classic
+    text: "flight day 2 and I feel awful, like I'm going to throw up any second, and it gets way worse every time I turn my head. Threw up twice already. Cold sweats."
+    expect: space_motion_sickness
+    escalate: false
+    why: Textbook space motion sickness in the first 72 hours.
+
+  - id: renal_classic
+    category: classic
+    text: "Flight day 63. Woke up with really bad pain in my right side, maybe 8 out of 10. It comes and goes in waves and shoots down toward my groin. There's blood in my urine."
+    expect: renal_stone
+    escalate: true
+    why: Textbook renal colic. The single most mission-threatening case on the list.
+
+  - id: sans_classic
+    category: classic
+    text: "Around flight day 118. Reading the procedure cards is getting harder, everything close up is blurry. Refraction is about a diopter more hyperopic than my preflight baseline. OCT shows disc edema and choroidal folds. No double vision."
+    expect: sans
+    escalate: false
+    why: SANS case definition with the discriminator (no diplopia) included.
+
+  - id: congestion_classic
+    category: classic
+    text: "I've been stuffed up basically since I got here and it never really cleared. My face feels full all the time. No fever, no sore throat, nothing green."
+    expect: sinonasal_congestion
+    escalate: false
+    why: Fluid shift, not infection. Time course is the tell.
+
+  - id: vte_classic
+    category: classic
+    text: "Flight day 30. The left side of my neck looks swollen compared to the right and I'm a little short of breath. Chest feels tight. Ultrasound shows the jugular doesn't compress."
+    expect: jugular_vte
+    escalate: true
+    why: The rare one that can kill someone. Must never be buried.
+
+  - id: sleep_classic
+    category: classic
+    text: "I'm getting maybe four hours a night. Can't fall asleep, been taking the sleep aid most nights. My reaction time feels slow and I'm snapping at people."
+    expect: sleep_disruption_circadian
+    escalate: false
+    why: The most common problem on ISS. Cognitive slowing is what makes it operational.
+
+  - id: shoulder_classic
+    category: classic
+    text: "Shoulder's been killing me since the EVA on Tuesday, about a 6. Can't raise my arm all the way."
+    expect: msk_shoulder_overuse
+    escalate: false
+    why: Highest-volume injury category in flight.
+
+  - id: co2_classic
+    category: classic
+    text: "Splitting headache all afternoon and I can't concentrate on anything. Danny's got one too. We've both been working head-down in the rack."
+    expect: tension_headache_co2
+    escalate: false
+    why: >
+      The only condition diagnosed by asking about SOMEONE ELSE. Two crew with
+      simultaneous headaches means suspect the atmosphere, not the people.
+
+  - id: orthostatic_classic
+    category: classic
+    text: "We landed about six hours ago. Every time I try to stand up I get lightheaded and feel like I'm going to pass out. Heart's racing."
+    expect: orthostatic_intolerance
+    escalate: true
+    why: The one that is dangerous on the ground, not on orbit.
+
+  - id: urti_classic
+    category: classic
+    text: "Started three days ago out of nowhere. Sore throat, coughing, feel run down, temp is 38.6."
+    expect: urti
+    escalate: false
+    why: Real infection - distinct onset, fever, sore throat. Contrast with congestion_classic.
+
+  - id: back_classic
+    category: classic
+    text: "Lower back has been aching since about day 4. Dull, constant. I measured and I'm almost 4 cm taller than preflight."
+    expect: msk_back_pain_adaptation
+    escalate: false
+    why: Benign adaptation. Must be preferred over renal colic when nothing points renal.
+
+  # ---------- mimics: same words, different answer ----------
+
+  - id: mimic_sms_late
+    category: mimic
+    text: "flight day 90, I keep feeling like I'm going to throw up and it's worse when I move my head. Threw up twice."
+    expect: none
+    escalate: false
+    why: >
+      Word-for-word almost identical to sms_classic but on day 90. Space motion
+      sickness is a first-72-hours phenomenon. A system that still says SMS here
+      is pattern-matching, not reasoning.
+
+  - id: mimic_back_vs_renal
+    category: mimic
+    text: "My back is killing me on the right side, about a 7. It comes in waves and there's blood when I pee."
+    expect: renal_stone
+    escalate: true
+    why: >
+      Crewmember says BACK, but colicky plus hematuria means renal until proven
+      otherwise. Body region must not beat the character of the pain.
+
+  - id: mimic_cold_vs_fluidshift
+    category: mimic
+    text: "Nose is completely blocked and my head feels heavy. Been like this the whole mission. Temp is 36.7."
+    expect: sinonasal_congestion
+    escalate: false
+    why: Sounds like a cold. Is physics. Getting this wrong wastes scarce antibiotics.
+
+  - id: mimic_puffy_face
+    category: mimic
+    text: "My face is puffy and my nose is blocked."
+    expect: sinonasal_congestion
+    escalate: false
+    why: >
+      Facial fullness is near-universal on orbit from the fluid shift. It must
+      NOT drag the jugular clot rule up on its own - that is a false alarm
+      generator.
+
+  - id: mimic_headache_alone
+    category: mimic
+    text: "I have a headache."
+    expect: none
+    escalate: false
+    why: >
+      Deliberately almost information-free. A good system asks a question here.
+      A bad one picks whatever has the highest base rate and states it.
+
+  # ---------- how people actually talk ----------
+
+  - id: talk_rambling
+    category: phrasing
+    text: "ok so this is probably nothing but like since yesterday my side has been hurting? not constantly, it kind of comes and goes, and honestly the worst part is when it hits it REALLY hits. also i think there was some blood when i went to the bathroom but the lighting in here is bad so idk"
+    expect: renal_stone
+    escalate: true
+    why: How a nervous person actually reports this. Hedged, lowercase, uncertain.
+
+  - id: talk_terse
+    category: phrasing
+    text: "fd2. naseaus. head movement makes it worse. threw up."
+    expect: space_motion_sickness
+    escalate: false
+    why: Terse with a typo and an abbreviation. Should still work.
+
+  - id: talk_denials
+    category: phrasing
+    text: "No fever, no sore throat, no cough. Just totally blocked up and my face feels full, and it's been that way since launch."
+    expect: sinonasal_congestion
+    escalate: false
+    why: >
+      Almost entirely NEGATIVE statements. Regression guard - a negation once
+      leaked across a sentence boundary and inverted a finding.
+
+  - id: talk_minimizing
+    category: phrasing
+    text: "It's fine, I don't want to make a thing of it, but my neck's a bit swollen on one side and I'm a little more out of breath than usual."
+    expect: jugular_vte
+    escalate: true
+    why: >
+      Crew minimize. The tool must not minimize with them. Understated
+      presentation of the most dangerous condition on the list.
+
+  - id: talk_multiple
+    category: phrasing
+    text: "Flight day 50. Barely sleeping, maybe 4 hours, and I've had a headache most of the week. Shoulder's sore too from ARED."
+    expect: sleep_disruption_circadian
+    escalate: false
+    why: Three complaints at once. Should produce a real multi-entry differential.
+
+  # ---------- the answer is "I don't know" ----------
+
+  - id: dental_classic
+    category: classic
+    text: "I think I cracked a filling. There's a sharp pain in my back molar when I drink anything cold, about a 6, and it hurts to bite on that side."
+    expect: dental_emergency
+    escalate: false
+    why: >
+      Was a known gap until 23 Aug - the correct answer used to be "nothing
+      fits". Now a rule exists. NASA's IMM puts dental caries at 0.39 events per
+      person-year, which makes this one of the likelier things in the whole KB.
+
+  - id: none_psych
+    category: nothing_fits
+    text: "I've been feeling really low and disconnected from the crew for a couple weeks now."
+    expect: none
+    escalate: false
+    why: >
+      Behavioural health is deliberately excluded from v1 - a scoring engine is
+      the wrong tool and a wrong answer does real harm. Must return nothing and
+      route to a human, not guess.
+
+  - id: none_nonsense
+    category: nothing_fits
+    text: "my quantum flux capacitor feels misaligned"
+    expect: none
+    escalate: false
+    why: Garbage in must not produce a confident diagnosis out.
+
+  - id: wound_classic
+    category: classic
+    text: "I caught my hand in the hatch and there's a deep cut across two knuckles, bleeding a fair amount, and the edges fall open when I let go."
+    expect: wound_laceration
+    escalate: true
+    why: >
+      Was a known gap until 23 Aug. Gaping edges is the finding that decides
+      suture versus dressing, which is why it is in the prompt.
+
+  - id: dcs_type1
+    category: classic
+    text: "Came in off the EVA about two hours ago. My left shoulder has this deep boring ache, maybe a 7, and there's a weird blotchy marbled rash on my forearm."
+    expect: decompression_sickness
+    escalate: true
+    why: >
+      Classic Type I DCS after a decompression exposure - joint pain plus
+      cutis marmorata. The EVA in the first sentence is the whole diagnosis.
+
+  - id: dcs_type2
+    category: classic
+    text: "Post-EVA, prebreathe got cut short because of the timeline. He's confused, his balance is off and he says his arm feels weak."
+    expect: decompression_sickness
+    escalate: true
+    why: >
+      Type II - central nervous system involvement, potentially fatal. NASA has
+      never had a Type II event in spaceflight; if we ever see this the tool must
+      not hesitate.
+
+  - id: mimic_shoulder_vs_dcs
+    category: mimic
+    text: "Shoulder's aching after the EVA on Tuesday, about a 6. No rash, no numbness, nothing else. That was four days ago."
+    expect: msk_shoulder_overuse
+    escalate: false
+    why: >
+      Shoulder pain after EVA is FAR more often suit overuse than DCS. The
+      discriminators are time (days later, not hours), no skin or neuro signs.
+      If this reads as decompression sickness the tool cries wolf on the
+      commonest EVA complaint there is.
+
+  - id: mimic_dental_vs_sinus
+    category: mimic
+    text: "Upper back teeth ache and my face feels full. I've been congested since I got here though."
+    expect: sinonasal_congestion
+    escalate: false
+    why: >
+      Upper molar pain and sinus congestion genuinely overlap. On orbit
+      congestion is near-universal from the fluid shift, so "since I got here"
+      should still win over a dental cause.
+
+  - id: none_eye_foreign_body
+    category: nothing_fits
+    text: "Something flew into my eye while I was working in the rack and it's watering and stinging."
+    expect: none
+    escalate: false
+    why: >
+      Ocular foreign body is a real ISS hazard - debris does not fall in
+      microgravity, it floats at head height. We have NO rule. Correct answer is
+      to say so.
+
+  - id: none_burn
+    category: nothing_fits
+    text: "I burned my forearm on a hot surface during the payload swap, it's red and blistering."
+    expect: none
+    escalate: false
+    why: Burns are a gap. Do not let the laceration rule swallow them - different treatment entirely.
+
+  - id: none_radiation
+    category: nothing_fits
+    text: "There was a solar particle event alert. Should I be worried about my radiation dose?"
+    expect: none
+    escalate: false
+    why: >
+      Deliberate non-rule. Radiation risk is DOSIMETRY and long-term cancer
+      probability, not a symptom you can diagnose from a complaint - acute
+      radiation syndrome does not present at ISS dose rates. A symptom-driven
+      engine is the wrong tool and it must say so rather than guess.
+
+  - id: dental_abscess
+    category: classic
+    text: "Tooth has been killing me for two days, a 9 now, and it's waking me up at night. The gum and my cheek are swollen on that side. Temp is 38.7."
+    expect: dental_emergency
+    escalate: true
+    why: >
+      The dangerous dental branch - swelling plus fever means a spreading
+      infection. Also the regression guard for alarm noise: fever is a red flag
+      in four rules, and this case used to raise four separate alarms.

@@ -1,0 +1,66 @@
+id: space_motion_sickness
+name: Space Motion Sickness
+aka: [SMS, Space Adaptation Syndrome]
+category: vestibular
+urgency: routine
+prior: 0.35
+
+description: >
+  Nausea, vomiting, pallor and malaise in the first days on orbit as the
+  vestibular system adapts to the loss of a gravitational reference.
+
+microgravity_note: >
+  Almost entirely a first-72-hours phenomenon. Mission elapsed time is the
+  decisive fact: the same nausea and vomiting on flight day 40 is NOT space
+  motion sickness and must be worked up as something else. Symptoms provoked
+  by head movement are characteristic; the otoliths no longer agree with the eyes.
+
+findings:
+  - finding: nausea
+    weight: 1.8
+    absent_weight: -1.5
+  - finding: vomiting
+    weight: 1.5
+  - finding: symptoms_on_head_movement
+    weight: 1.9
+    absent_weight: -0.7
+  - finding: cold_sweat
+    weight: 1.0
+  - finding: vertigo
+    weight: 0.9
+  - finding: headache
+    weight: 0.6
+  - finding: mission_elapsed_days
+    weight: -2.0
+    absent_weight: 2.0
+    note: >
+      Two-sided. A long mission argues against SMS (weight), a short one argues
+      for it (absent_weight). Day 0-3 is strong support; past day 7 it is
+      strong evidence against.
+      Days 0-3 strongly supports, past day 7 strongly argues against.
+  - finding: recent_gravity_transition
+    weight: 1.4
+  - finding: flank_pain
+    weight: -1.0
+    note: Points at renal colic instead.
+  - finding: fever
+    weight: -1.0
+    note: SMS does not cause fever. Fever means look for infection.
+
+red_flags: [numbness_or_weakness]
+
+recommend:
+  - Minimize head movement for the first 48-72 hours; keep the visual frame stable.
+  - Anti-motion-sickness medication per the flight surgeon's protocol.
+  - Push oral fluids - vomiting plus the on-orbit fluid shift dehydrates fast.
+  - Defer EVA and any high-workload task until symptoms resolve.
+  - If symptoms persist past flight day 7, STOP calling it SMS and re-work the differential.
+
+differential: [urti, sans, renal_stone]
+
+sources:
+  - title: "Medical Operations and Clinical Care - NASA"
+    url: "https://www.nasa.gov/reference/medical-operations-and-clinical-care/"
+  - title: "Space Motion Sickness - NASA Human Research Program evidence"
+    url: "https://ntrs.nasa.gov/api/citations/20110008743/downloads/20110008743.pdf"
+    note: Nausea and headache named as frequently occurring in-flight conditions requiring medical attention.

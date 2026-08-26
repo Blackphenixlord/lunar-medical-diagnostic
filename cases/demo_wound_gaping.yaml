@@ -1,0 +1,15 @@
+title: "FD 21 - gaping knuckle laceration from a hatch"
+narrative: >
+  Caught my hand in the hatch. Deep cut across two knuckles, bleeding a fair
+  amount but it stopped with pressure. The edges fall open when I let go.
+  Nothing stuck in it.
+expect_top: wound_laceration
+observations:
+  open_wound: true
+  wound_gaping: true
+  bleeding_uncontrolled: false
+  foreign_body: false
+  wound_spreading_redness: false
+  fever: 36.9
+  numbness_or_weakness: false
+  mission_elapsed_days: 21

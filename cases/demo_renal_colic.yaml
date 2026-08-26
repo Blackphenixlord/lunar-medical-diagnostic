@@ -1,0 +1,18 @@
+title: "FD 63 - severe right flank pain, waves, blood in urine"
+narrative: >
+  Flight day 63. Woke up with really bad pain in my right side, about 8 out of 10.
+  It comes and goes in waves and it shoots down toward my groin. There is blood in my urine.
+  I feel nauseous but my head is fine and moving my head does not change anything.
+expect_top: renal_stone
+observations:
+  flank_pain: 8
+  pain_colicky: true
+  pain_radiates_groin: true
+  hematuria: true
+  nausea: 6
+  vomiting: false
+  fever: 36.9
+  urine_output_low: false
+  symptoms_on_head_movement: false
+  headache: false          # narrative says "my head is fine"
+  mission_elapsed_days: 63

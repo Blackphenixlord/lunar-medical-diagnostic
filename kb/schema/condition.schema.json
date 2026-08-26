@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nasahunch.local/schema/condition.schema.json",
+  "title": "MDX Condition",
+  "description": "One diagnosable condition in the MDX knowledge base. One YAML file per condition in kb/conditions/.",
+  "type": "object",
+  "required": ["id", "name", "category", "urgency", "prior", "findings", "sources"],
+  "additionalProperties": false,
+  "properties": {
+    "id":       { "type": "string", "pattern": "^[a-z0-9_]+$" },
+    "name":     { "type": "string", "minLength": 3 },
+    "aka":      { "type": "array", "items": { "type": "string" } },
+    "category": {
+      "type": "string",
+      "enum": ["neuro_ocular", "renal", "vestibular", "musculoskeletal",
+               "cardiovascular", "infectious", "dermatologic", "sleep",
+               "respiratory", "psychological", "environmental", "trauma"]
+    },
+    "urgency": {
+      "type": "string",
+      "description": "How fast a Crew Medical Officer must act.",
+      "enum": ["routine", "monitor", "urgent", "emergency"]
+    },
+    "prior": {
+      "type": "number",
+      "minimum": 0.0001, "maximum": 0.9,
+      "description": "Baseline probability this condition is present in a crewmember on a long-duration mission, before any findings. Used as the starting log-odds."
+    },
+    "description": { "type": "string" },
+    "microgravity_note": {
+      "type": "string",
+      "description": "Why this presents DIFFERENTLY in microgravity than on Earth. Required for anything the panel will ask about."
+    },
+    "findings": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Evidence that moves the score. Each entry references a finding id from kb/findings.yaml.",
+      "items": {
+        "type": "object",
+        "required": ["finding", "weight"],
+        "additionalProperties": false,
+        "properties": {
+          "finding": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+          "weight": {
+            "type": "number", "minimum": -5, "maximum": 5,
+            "description": "Log-odds contribution when PRESENT. Positive = supports. Negative = argues against. +2.0 is strong, +0.5 is weak."
+          },
+          "absent_weight": {
+            "type": "number", "minimum": -5, "maximum": 5,
+            "description": "Log-odds contribution when explicitly ABSENT (denied). Defaults to 0 = unknown/absent tells us nothing."
+          },
+          "required": {
+            "type": "boolean",
+            "description": "If true and this finding is explicitly absent, the condition is ruled out entirely.",
+            "default": false
+          },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "red_flags": {
+      "type": "array",
+      "description": "If any of these findings are present, escalate immediately regardless of score.",
+      "items": { "type": "string" }
+    },
+    "recommend": {
+      "type": "array",
+      "description": "What the CMO should do next. Actions, not prescriptions.",
+      "items": { "type": "string" }
+    },
+    "differential": {
+      "type": "array",
+      "description": "Condition ids that look similar and must be ruled out.",
+      "items": { "type": "string" }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "description": "EVERY condition must cite a real source. No source, no rule.",
+      "items": {
+        "type": "object",
+        "required": ["title", "url"],
+        "properties": {
+          "title": { "type": "string" },
+          "url":   { "type": "string" },
+          "note":  { "type": "string" }
+        }
+      }
+    }
+  }
+}

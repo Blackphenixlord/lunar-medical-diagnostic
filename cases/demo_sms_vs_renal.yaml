@@ -1,0 +1,17 @@
+title: "FD 2 - nausea and vomiting, no flank pain (the SMS look-alike)"
+narrative: >
+  Second day on orbit. I keep feeling like I am going to throw up, and it gets much
+  worse every time I turn my head. Threw up twice. Cold sweats. No pain in my side,
+  no blood in my urine.
+expect_top: space_motion_sickness
+observations:
+  nausea: 8
+  vomiting: true
+  symptoms_on_head_movement: true
+  cold_sweat: true
+  flank_pain: 0
+  hematuria: false
+  pain_colicky: false
+  fever: 36.8
+  mission_elapsed_days: 2
+  recent_gravity_transition: true

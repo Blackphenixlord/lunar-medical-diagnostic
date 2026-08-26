@@ -1,0 +1,15 @@
+title: "FD 45 - stuffy the entire mission (fluid shift, NOT an infection)"
+narrative: >
+  I have been stuffed up basically since I got here, it never really cleared.
+  My face feels full. No fever, no sore throat, nothing green coming out.
+expect_top: sinonasal_congestion
+observations:
+  nasal_congestion: true
+  congestion_since_arrival: true
+  facial_fullness: true
+  fever: 36.7
+  sore_throat: false
+  purulent_discharge: false
+  cough: false
+  malaise: false
+  mission_elapsed_days: 45

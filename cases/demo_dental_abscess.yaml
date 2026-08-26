@@ -1,0 +1,11 @@
+title: "Molar pain with facial swelling and fever - the dangerous dental branch"
+narrative: >
+  Tooth has been killing me for two days, a 9 now, and it is waking me up.
+  The gum and cheek on that side are swollen. Temperature is 38.7.
+expect_top: dental_emergency
+observations:
+  tooth_pain: 9
+  jaw_or_face_swelling: true
+  fever: 38.7
+  pain_wakes_from_sleep: true
+  pain_on_biting: true

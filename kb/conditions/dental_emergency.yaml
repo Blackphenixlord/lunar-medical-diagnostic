@@ -1,0 +1,80 @@
+id: dental_emergency
+name: Dental Emergency
+aka: [toothache, dental abscess, pulpitis, lost filling]
+category: trauma
+urgency: monitor
+prior: 0.08
+
+description: >
+  Caries, pulpitis, abscess, a lost filling or crown, or a fractured tooth.
+  Rarely dangerous, frequently mission-impacting, and there is no dentist.
+  Urgency is `monitor`, not `urgent`, on purpose: a sensitive tooth must not
+  page the flight surgeon. The dangerous branch - swelling and fever, meaning a
+  spreading infection - is caught by red_flags instead.
+
+microgravity_note: >
+  Launch vibration is itself a cause - cosmonauts have reported fillings and
+  crowns shaken loose. NASA's Integrated Medical Model predicts, per person-year:
+  dental caries 0.39, abscess 0.023, exposed pulp 0.020, crown replacement
+  0.005, avulsion 0.003. Caries at 0.39 per person-year makes this one of the
+  likelier things on this whole knowledge base to actually happen. There is no
+  documented in-flight dental emergency in a US astronaut, but a cosmonaut on
+  Salyut 6 in 1978 suffered incapacitating dental pain through the last two
+  weeks of a 96-day flight - which is the real risk here: not death, but a
+  crewmember who cannot work and cannot be fixed. Crew are trained to pull a
+  tooth. That is the ceiling of the on-orbit capability.
+
+findings:
+  - finding: tooth_pain
+    weight: 2.8
+    absent_weight: -2.5
+  - finding: pain_on_cold
+    weight: 2.0
+    note: Hot/cold sensitivity points at pulpitis or exposed dentine.
+  - finding: pain_on_biting
+    weight: 1.8
+  - finding: lost_filling_or_crown
+    weight: 2.4
+    note: Often mechanical, often traceable to launch vibration.
+  - finding: jaw_or_face_swelling
+    weight: 2.2
+    note: Swelling means abscess until proven otherwise. That is the dangerous branch.
+  - finding: pain_wakes_from_sleep
+    weight: 1.6
+    note: Classic marker that pulpitis has become irreversible.
+  - finding: fever
+    weight: 1.4
+    note: Fever with facial swelling is a spreading dental infection. Escalate.
+  - finding: headache
+    weight: 0.5
+    note: Referred pain is common. Low weight - everything causes headache up here.
+  - finding: facial_fullness
+    weight: 0.4
+    note: Deliberately low. Every crewmember has a puffy face from the fluid shift.
+  - finding: sore_throat
+    weight: -0.8
+  - finding: nasal_congestion
+    weight: -0.8
+    note: Upper molar pain and sinus congestion genuinely overlap on Earth; on orbit congestion is near-universal, so it argues away from dental.
+
+red_flags: [jaw_or_face_swelling, fever]
+
+recommend:
+  - Analgesia per protocol. Pain control is the immediate mission-preservation move.
+  - Temporary filling material for a lost filling or crown - this has been done successfully on orbit before.
+  - Facial swelling plus fever means a spreading infection. Start antibiotics per flight surgeon direction and escalate.
+  - Downlink photographs of the tooth and gum to the flight surgeon.
+  - Soft diet, avoid chewing on that side, avoid temperature extremes.
+  - Note that crew training covers extraction. It is the last resort, not the first move, and not without the flight surgeon.
+
+differential: [tension_headache_co2, sinonasal_congestion, urti]
+
+sources:
+  - title: "Review of Spaceflight Dental Emergencies - NASA/TM-2012-217368"
+    url: "https://humanresearchroadmap.nasa.gov/gaps/closureDocumentation/2-Menon-A_TM-2012-217368.pdf"
+    note: IMM per-person-year rates, Salyut 6 1978 case, cosmonaut lost fillings from launch vibration.
+  - title: "Oral Health in Zero Gravity: Orofacial Effects and Countermeasures in Spaceflight - PMC"
+    url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC10728690/"
+  - title: "Medical Operations and Clinical Care - NASA"
+    url: "https://www.nasa.gov/reference/medical-operations-and-clinical-care/"
+    note: Crew basic medical training includes stitching a wound and pulling a tooth.

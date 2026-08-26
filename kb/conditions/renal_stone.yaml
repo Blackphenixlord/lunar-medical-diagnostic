@@ -1,0 +1,65 @@
+id: renal_stone
+name: Renal Stone with Renal Colic
+aka: [nephrolithiasis, kidney stone]
+category: renal
+urgency: urgent
+prior: 0.04
+
+description: >
+  Obstructing stone in the urinary tract producing severe colicky flank pain,
+  often with hematuria. A genuine mission-threatening event.
+
+microgravity_note: >
+  Microgravity-induced bone demineralization dumps calcium into the urine
+  while crew are chronically underhydrated from the fluid shift and from
+  deliberately limiting water intake. That combination raises stone risk
+  above the terrestrial baseline. NASA's own risk modelling lists renal
+  stones with colic as a credible event that has NOT yet occurred in flight -
+  meaning there is no in-flight incidence to lean on and the crew has to be
+  ready for the first one. This is the case most likely to force a medical
+  evacuation, so a false negative here is far worse than a false positive.
+
+findings:
+  - finding: flank_pain
+    weight: 2.4
+    absent_weight: -2.0
+    required: false
+  - finding: pain_colicky
+    weight: 2.0
+    note: Waves rather than constant pain is the single most useful discriminator.
+  - finding: pain_radiates_groin
+    weight: 1.8
+  - finding: hematuria
+    weight: 2.0
+  - finding: nausea
+    weight: 0.8
+    note: Present in both renal colic and SMS - low weight on purpose.
+  - finding: vomiting
+    weight: 0.6
+  - finding: urine_output_low
+    weight: 1.2
+  - finding: dysuria
+    weight: 0.5
+  - finding: fever
+    weight: 1.0
+    note: Fever plus obstruction is infected obstruction. That is an emergency.
+  - finding: symptoms_on_head_movement
+    weight: -1.2
+
+red_flags: [fever, urine_output_low, vomiting]
+
+recommend:
+  - Urinalysis for blood - the on-orbit dipstick is the fastest discriminator available.
+  - Renal ultrasound for hydronephrosis; crew are already trained on ISS ultrasound.
+  - Aggressive oral hydration and analgesia per protocol.
+  - Contact the flight surgeon IMMEDIATELY. Fever + flank pain + low urine output = infected obstructed kidney = evacuation conversation.
+  - Strain all urine and retain any stone passed for postflight analysis.
+
+differential: [space_motion_sickness, msk_back_pain_adaptation, urti]
+
+sources:
+  - title: "Predictive modelling of rare in-flight medical events - NASA NTRS"
+    url: "https://ntrs.nasa.gov/api/citations/20110008743/downloads/20110008743.pdf"
+    note: Names renal stones with renal colic as a modelled but not-yet-observed in-flight hazard.
+  - title: "What the first medical evacuation from the ISS tells us about healthcare in space"
+    url: "https://www.space.com/space-exploration/human-spaceflight/what-the-first-medical-evacuation-from-the-international-space-station-tells-us-about-healthcare-in-space"

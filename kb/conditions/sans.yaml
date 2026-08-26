@@ -1,0 +1,75 @@
+id: sans
+name: Spaceflight-Associated Neuro-Ocular Syndrome
+aka: [SANS, VIIP, Visual Impairment Intracranial Pressure syndrome]
+category: neuro_ocular
+urgency: monitor
+prior: 0.30
+
+description: >
+  A constellation of optic disc edema, posterior globe flattening,
+  choroidal/retinal folds, optic nerve sheath distension and a hyperopic
+  refractive shift, seen in long-duration crew. Not painful, often noticed
+  first as "reading got harder."
+
+microgravity_note: >
+  This condition does not exist on Earth. It is driven by the headward fluid
+  shift in microgravity. Prevalence scales with mission duration: about 23%
+  report near-vision disturbance after short-duration flight vs about 47%
+  after long-duration ISS increments. Unlike terrestrial idiopathic
+  intracranial hypertension, SANS typically does NOT produce diplopia,
+  pulsatile tinnitus, or transient visual obscurations - their absence
+  actually supports SANS.
+
+findings:
+  - finding: blurred_near_vision
+    weight: 1.6
+    absent_weight: -1.0
+    note: Usually the first thing the crewmember notices.
+  - finding: hyperopic_shift
+    weight: 2.2
+    absent_weight: -1.0
+    note: Up to +1.5 D, can appear within 3 weeks of microgravity exposure.
+  - finding: optic_disc_edema
+    weight: 2.5
+    absent_weight: -0.8
+    note: Core case-definition finding.
+  - finding: choroidal_folds
+    weight: 2.0
+  - finding: globe_flattening
+    weight: 2.2
+    note: Detectable by orbital ultrasound on-orbit; MRI postflight.
+  - finding: cotton_wool_spots
+    weight: 1.2
+  - finding: scotoma
+    weight: 0.8
+  - finding: headache
+    weight: 0.4
+  - finding: mission_elapsed_days
+    weight: 0.9
+    absent_weight: -0.5
+    note: Risk climbs with time on orbit. Engine treats >21 days as supporting.
+  - finding: diplopia
+    weight: -1.2
+    note: Argues AGAINST SANS, argues FOR raised ICP from another cause.
+  - finding: pulsatile_tinnitus
+    weight: -1.2
+
+red_flags: [diplopia, scotoma]
+
+recommend:
+  - Full OCT of both optic discs and retina; compare against the preflight baseline.
+  - Cycloplegic refraction - a normal cycloplegic refraction with hyperopic manifest shift fits SANS.
+  - Orbital ultrasound for globe flattening and optic nerve sheath diameter.
+  - Downlink imaging to the flight surgeon; SANS is managed, not treated on-orbit.
+  - Issue corrective "space anticipation glasses" for the near-vision shift.
+
+differential: [urti, sleep_disruption_circadian]
+
+sources:
+  - title: "Spaceflight-Associated Neuro-Ocular Syndrome (SANS) - EyeWiki"
+    url: "https://eyewiki.org/Spaceflight-Associated_Neuro-Ocular_Syndrome_(SANS)"
+    note: Case definition, exam findings, 23% vs 47% duration figures.
+  - title: "SANS and the neuro-ophthalmologic effects of microgravity: a review and an update - npj Microgravity"
+    url: "https://www.nature.com/articles/s41526-020-0097-9"
+  - title: "SANS: expert consensus on diagnosis and management - Eye (Nature)"
+    url: "https://www.nature.com/articles/s41433-026-04651-6"

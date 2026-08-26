@@ -1,0 +1,59 @@
+# VITALS - one command to run the whole system.
+#
+#   docker compose build          once, with a network (downloads the model)
+#   docker compose up             -> http://localhost:8000
+#
+# TWO CONTAINERS ON PURPOSE
+#   ollama   the language model. Big, slow to build, changes almost never.
+#   vitals   the engine, knowledge base and UI. Small, changes constantly.
+#
+# Keeping them apart means editing a diagnostic rule rebuilds a 200 MB image in
+# seconds instead of re-downloading a 3 GB model.
+#
+# The model is BAKED INTO the ollama image at build time - see
+# docker/ollama.Dockerfile. After the first build, nothing downloads anything,
+# which is what makes this safe to demo on a network you do not control.
+
+services:
+
+  ollama:
+    build:
+      context: .
+      dockerfile: docker/ollama.Dockerfile
+      args:
+        MODEL: ${VITALS_OLLAMA_MODEL:-llama3.2}
+    image: vitals-ollama:${VITALS_OLLAMA_MODEL:-llama3.2}
+    container_name: vitals-ollama
+    ports:
+      - "11434:11434"          # exposed so `python -m vitals ask` works outside docker too
+    volumes:
+      - ollama-models:/root/.ollama    # anything pulled later survives a restart
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  vitals:
+    build: .
+    container_name: vitals-app
+    ports:
+      - "8000:8000"
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      VITALS_OLLAMA_MODEL: ${VITALS_OLLAMA_MODEL:-llama3.2}
+    depends_on:
+      ollama:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      # Live-mount the knowledge base and cases so Joaquin can edit a rule and
+      # just refresh the browser. No rebuild, no Python, no Docker knowledge.
+      - ./kb:/app/kb:ro
+      - ./cases:/app/cases:ro
+      - ./prompts:/app/prompts:ro
+
+volumes:
+  ollama-models:

@@ -1,0 +1,60 @@
+id: msk_back_pain_adaptation
+name: Adaptation Back Pain from Spinal Elongation
+aka: [space back pain, spinal lengthening pain]
+category: musculoskeletal
+urgency: routine
+prior: 0.40
+
+description: >
+  Diffuse lower back ache in the first weeks on orbit as the spine unloads,
+  intervertebral discs rehydrate, and the crewmember measurably gets taller.
+
+microgravity_note: >
+  Crew grow up to several centimetres on orbit because the spinal column is
+  no longer compressed. That stretch is what hurts. It is benign and
+  self-limiting, but it sits in exactly the same body region as renal colic,
+  which is not - so the engine has to separate them. The discriminators are
+  character (dull and constant vs waves), radiation (none vs to the groin),
+  and urine (normal vs blood).
+
+findings:
+  - finding: back_pain
+    weight: 2.2
+    absent_weight: -2.2
+  - finding: height_increase
+    weight: 1.8
+  - finding: mission_elapsed_days
+    weight: -1.2
+    absent_weight: 1.2
+    note: "Negative weight - a long mission argues against simple adaptation pain."
+  - finding: pain_colicky
+    weight: -2.2
+    note: Colicky pain is renal until proven otherwise.
+  - finding: hematuria
+    weight: -2.5
+  - finding: pain_radiates_groin
+    weight: -1.8
+  - finding: numbness_or_weakness
+    weight: -1.0
+    note: Radicular signs mean a disc problem, not simple adaptation.
+  - finding: fever
+    weight: -1.5
+  - finding: pain_after_exercise
+    weight: 0.5
+
+red_flags: [numbness_or_weakness, hematuria]
+
+recommend:
+  - Fetal-position stretching and knees-to-chest; crew report this is the most effective relief.
+  - Simple analgesia per protocol.
+  - Measure and log height weekly - it makes the diagnosis objective instead of a guess.
+  - If the pain becomes colicky, radiates to the groin, or urine changes color, STOP and work up renal colic.
+  - Escalate any numbness, weakness, or bowel/bladder change immediately.
+
+differential: [renal_stone, msk_shoulder_overuse]
+
+sources:
+  - title: "Medical Operations and Clinical Care - NASA"
+    url: "https://www.nasa.gov/reference/medical-operations-and-clinical-care/"
+  - title: "Managing Risks to Astronaut Health - Safe Passage (NCBI Bookshelf)"
+    url: "https://www.ncbi.nlm.nih.gov/books/NBK223777/"

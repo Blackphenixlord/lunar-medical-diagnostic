@@ -1,0 +1,4 @@
+# Keep line endings sane between Windows laptops and the Linux boards.
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.png binary

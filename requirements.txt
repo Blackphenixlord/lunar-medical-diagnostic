@@ -1,0 +1,10 @@
+# Core engine - zero heavy deps on purpose. Runs on a Raspberry Pi.
+PyYAML>=6.0
+jsonschema>=4.20
+
+# Dev
+pytest>=8.0
+
+# Optional: natural-language symptom intake (see src/mdx/llm.py).
+# The engine works fully WITHOUT these installed.
+# anthropic>=0.40

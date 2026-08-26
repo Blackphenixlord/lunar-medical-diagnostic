@@ -1,0 +1,65 @@
+id: sinonasal_congestion
+name: Fluid-Shift Sinonasal Congestion
+aka: [space nose, cephalad fluid shift congestion]
+category: respiratory
+urgency: routine
+prior: 0.45
+
+description: >
+  Persistent nasal blockage and facial fullness caused by the headward fluid
+  shift engorging the nasal mucosa. Feels like a permanent head cold that
+  never turns into one.
+
+microgravity_note: >
+  This is the classic microgravity mimic. On Earth the same symptoms mean a
+  cold or sinusitis; on orbit they usually mean physics, not pathogens. The
+  discriminator is TIME COURSE - fluid-shift congestion starts on arrival and
+  never fully clears, while an infection has a defined onset, a sore throat
+  or fever, and resolves. Getting this wrong wastes the mission's very
+  limited antibiotic supply.
+
+findings:
+  - finding: nasal_congestion
+    weight: 2.0
+    absent_weight: -2.5
+  - finding: congestion_since_arrival
+    weight: 2.3
+    absent_weight: -1.2
+    note: The key discriminator against infection.
+  - finding: facial_fullness
+    weight: 1.6
+  - finding: headache
+    weight: 0.5
+  - finding: fever
+    weight: -2.0
+    absent_weight: 0.5
+    note: >
+      A fever argues hard against fluid shift. A NORMAL temperature is only
+      mild support - almost nobody on orbit has a fever, so "no fever" barely
+      narrows anything. Setting this symmetric put congestion at 86% in a
+      kidney-stone patient.
+  - finding: sore_throat
+    weight: -1.0
+  - finding: purulent_discharge
+    weight: -1.5
+  - finding: malaise
+    weight: -0.8
+  - finding: cough
+    weight: -0.6
+
+red_flags: [fever, purulent_discharge]
+
+recommend:
+  - Reassure - this is expected adaptation, not illness. Do NOT start antibiotics.
+  - Oral decongestant per protocol if it is interfering with sleep or work.
+  - Reassess if fever, purulent discharge, or a distinct new onset appears - that flips the differential to infection.
+  - Note that congestion also blunts taste and smell, which is a common secondary complaint.
+
+differential: [urti]
+
+sources:
+  - title: "Congestion and Sinonasal Illness in Outer Space: A Study on the International Space Station"
+    url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC12322577/"
+  - title: "Medical Operations and Clinical Care - NASA"
+    url: "https://www.nasa.gov/reference/medical-operations-and-clinical-care/"
+    note: Documents fluid shift as a cause of physiologic change on orbit.

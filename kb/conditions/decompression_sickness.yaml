@@ -1,0 +1,85 @@
+id: decompression_sickness
+name: Decompression Sickness
+aka: [DCS, the bends, caisson disease]
+category: environmental
+urgency: emergency
+prior: 0.01
+
+description: >
+  Nitrogen bubbles forming in tissue and blood after a drop in ambient
+  pressure. Type I is joint pain, skin mottling and limb tingling. Type II
+  involves the central nervous system or cardiovascular system and can kill.
+
+microgravity_note: >
+  This is an EVA problem, not a microgravity problem. The ISS cabin runs at
+  sea-level pressure while the EMU suit runs far lower, so every spacewalk is a
+  decompression. Crew prevent it by DENITROGENATION - breathing oxygen to wash
+  nitrogen out before egress - using prebreathe protocols historically running
+  3 to 5 hours, in-suit or via an overnight airlock "campout". The single most
+  important question is therefore not clinical but operational: was the
+  prebreathe complete? NASA has NEVER had a Type II event in spaceflight, which
+  is a statement about how good the prevention is, not about how safe the
+  physiology is. Treatment is repressurization, minimum 16.4 psia, plus oxygen.
+
+findings:
+  - finding: recent_decompression
+    weight: 2.6
+    absent_weight: -3.0
+    required: true
+    note: >
+      Effectively mandatory. No decompression, no decompression sickness. This
+      is the one place in the knowledge base where an absent finding rules a
+      condition out entirely, and it is safe to do so because the physics
+      require an exposure.
+  - finding: prebreathe_shortened
+    weight: 2.2
+    note: A cut or interrupted prebreathe is the classic setup.
+  - finding: joint_pain
+    weight: 2.3
+    note: Type I. Classically shoulder or elbow, deep and boring rather than sharp.
+  - finding: skin_mottling
+    weight: 2.0
+    note: Type I. Marbled or blotchy rash, sometimes called cutis marmorata.
+  - finding: numbness_or_weakness
+    weight: 1.8
+    note: Progressive weakness pushes this toward Type II.
+  - finding: confusion
+    weight: 2.4
+    note: Type II. Central nervous system involvement. Potentially fatal.
+  - finding: balance_impaired
+    weight: 2.2
+    note: Type II.
+  - finding: shortness_of_breath
+    weight: 1.6
+    note: Pulmonary DCS - rare, but named in NASA's own categories.
+  - finding: chest_pain
+    weight: 1.2
+  - finding: relief_on_repressurization
+    weight: 2.5
+    note: Symptoms easing as pressure rises is close to confirmatory.
+  - finding: fever
+    weight: -1.5
+  - finding: pain_after_eva_training
+    weight: 1.0
+    note: Low weight - simple suit overuse causes this too, and is far commoner.
+
+red_flags: [confusion, balance_impaired, numbness_or_weakness, shortness_of_breath]
+
+recommend:
+  - REPRESSURIZE. Raise cabin pressure - NASA guidance is a minimum of 16.4 psia.
+  - 100% oxygen by mask to accelerate nitrogen washout.
+  - Contact the flight surgeon IMMEDIATELY. Do not wait for the next conference.
+  - Keep the crewmember still and lying flat; do not let them exercise.
+  - Any confusion, weakness or balance change means suspect Type II - that is a vehicle-level emergency.
+  - Log the exact prebreathe timeline and suit pressure. The flight surgeon will ask first.
+
+differential: [msk_shoulder_overuse, jugular_vte]
+
+sources:
+  - title: "NASA OCHMO Technical Brief: Decompression Sickness"
+    url: "https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-037-decompression-sickness.pdf"
+    note: Type I vs Type II definitions, prebreathe protocols, 16.4 psia repressurization, no Type II event in NASA spaceflight.
+  - title: "Evidence Report: Risk of Decompression Sickness (DCS) - NASA NTRS"
+    url: "https://ntrs.nasa.gov/api/citations/20140003729/downloads/20140003729.pdf"
+  - title: "Preventing Decompression Sickness Over Three Decades of Extravehicular Activity - NASA TP-2011-216147"
+    url: "https://www.nasa.gov/wp-content/uploads/2023/03/conkin-prebreathe-overview-tp216147-2011.pdf"

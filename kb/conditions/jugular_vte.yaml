@@ -1,0 +1,60 @@
+id: jugular_vte
+name: Internal Jugular Venous Thrombosis
+aka: [IJV thrombosis, spaceflight VTE, venous thromboembolism]
+category: cardiovascular
+urgency: emergency
+prior: 0.005
+
+description: >
+  Clot in the internal jugular vein. Rare, but a real and documented
+  spaceflight event, and the one on this list that can kill someone.
+
+microgravity_note: >
+  On Earth gravity drains the head. In microgravity the internal jugular
+  veins engorge and flow can stagnate or even reverse. NASA has documented
+  altered internal jugular flow across crew and at least one in-flight
+  thrombus. Terrestrial risk scoring does not transfer - a crewmember with
+  zero conventional risk factors can still develop this. It is rare, but the
+  consequence is a pulmonary embolism on a vehicle days from definitive care,
+  so suspicion should be acted on early rather than watched.
+
+findings:
+  - finding: neck_swelling
+    weight: 2.6
+    absent_weight: -1.4
+  - finding: jugular_distension
+    weight: 3.0
+    note: Non-compressible IJV on ultrasound is close to diagnostic.
+  - finding: facial_fullness
+    weight: 0.8
+    note: Deliberately low - every crewmember has this from the fluid shift.
+  - finding: headache
+    weight: 0.7
+  - finding: chest_pain
+    weight: 1.6
+  - finding: shortness_of_breath
+    weight: 2.0
+    note: With neck swelling, think pulmonary embolism. This is an emergency.
+  - finding: limb_swelling_unilateral
+    weight: 1.5
+  - finding: hr_elevated
+    weight: 1.0
+  - finding: congestion_since_arrival
+    weight: -0.8
+
+red_flags: [shortness_of_breath, chest_pain, jugular_distension]
+
+recommend:
+  - Ultrasound the internal jugular veins bilaterally with compression - crew are trained for this and the flight surgeon can guide it live.
+  - Contact the flight surgeon IMMEDIATELY. Do not wait for the next scheduled conference.
+  - Anticoagulation only under direct flight surgeon direction - the vehicle carries a limited supply and bleeding risk on-orbit is its own problem.
+  - Shortness of breath or chest pain with neck swelling = suspected pulmonary embolism = evacuation conversation now.
+
+differential: [sinonasal_congestion, urti]
+
+sources:
+  - title: "Medical Operations and Clinical Care - NASA"
+    url: "https://www.nasa.gov/reference/medical-operations-and-clinical-care/"
+    note: Documents altered internal jugular flow and rare in-flight thrombus formation.
+  - title: "What the first medical evacuation from the ISS tells us about healthcare in space"
+    url: "https://theconversation.com/what-the-first-medical-evacuation-from-the-international-space-station-tells-us-about-healthcare-in-space-273728"

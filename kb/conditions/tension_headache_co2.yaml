@@ -1,0 +1,65 @@
+id: tension_headache_co2
+name: Elevated-CO2 / Environmental Headache
+aka: [CO2 headache, cabin headache]
+category: environmental
+urgency: monitor
+prior: 0.25
+
+description: >
+  Headache, fatigue and mild cognitive fog tracking with cabin carbon dioxide
+  concentration rather than with any illness in the crewmember.
+
+microgravity_note: >
+  On Earth exhaled CO2 falls away by convection. In microgravity there is no
+  convection, so a CO2 bubble can pool around a stationary crewmember's head -
+  a crewmember working head-down in a rack can be breathing far worse air than
+  the cabin sensor reports. Crew report headache at ISS CO2 levels well below
+  terrestrial industrial limits. The tell is EPIDEMIOLOGICAL, not clinical:
+  if more than one crewmember has a headache at the same time, suspect the
+  atmosphere, not the people. Headache is one of the frequently occurring
+  in-flight conditions requiring medical attention.
+
+findings:
+  - finding: headache
+    weight: 2.4
+    absent_weight: -2.5
+  - finding: fatigue
+    weight: 1.2
+  - finding: cognitive_slowing
+    weight: 1.4
+  - finding: irritability
+    weight: 0.8
+  - finding: headache_worse_lying_flat
+    weight: 0.9
+    note: Consistent with working in a fixed head-down position.
+  - finding: fever
+    weight: -2.0
+  - finding: sore_throat
+    weight: -1.2
+  - finding: optic_disc_edema
+    weight: -1.0
+    note: Disc edema points at SANS or raised ICP, not the cabin atmosphere.
+  - finding: blurred_near_vision
+    weight: -0.8
+  - finding: nausea
+    weight: 0.5
+
+red_flags: [cognitive_slowing]
+
+recommend:
+  - Check the current cabin CO2 reading AND ask whether other crewmembers have symptoms - simultaneous headaches across the crew is the diagnosis.
+  - Move the crewmember to a well-ventilated module; increase local airflow at the worksite.
+  - Report the reading to the ground so CDRA/scrubber performance can be reviewed.
+  - Simple analgesia per protocol.
+  - If the headache is new, severe, worst-ever, or comes with visual change or neurological signs, stop and work up SANS or raised intracranial pressure instead.
+
+differential: [sans, sleep_disruption_circadian, urti]
+
+sources:
+  - title: "Medical Operations and Clinical Care - NASA"
+    url: "https://www.nasa.gov/reference/medical-operations-and-clinical-care/"
+  - title: "Frequently occurring in-flight conditions requiring medical attention - NASA NTRS"
+    url: "https://ntrs.nasa.gov/api/citations/20110008743/downloads/20110008743.pdf"
+    note: In-flight nausea and headaches identified as frequently occurring conditions requiring medical attention.
+  - title: "Managing Risks to Astronaut Health - Safe Passage (NCBI Bookshelf)"
+    url: "https://www.ncbi.nlm.nih.gov/books/NBK223777/"

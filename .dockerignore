@@ -1,0 +1,16 @@
+# Keep the build context small and the image clean.
+.git
+_broken_git_MOVE_ME
+__pycache__
+**/__pycache__
+*.pyc
+.pytest_cache
+.venv
+venv
+
+# Not needed at runtime. `python -m vitals validate` still runs in the build,
+# so a broken knowledge base still fails the build.
+tests
+docs
+scripts
+*.md

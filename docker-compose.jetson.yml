@@ -1,0 +1,43 @@
+# GPU overlay for the Jetson. Use ON TOP of docker-compose.yml:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.jetson.yml build
+#   docker compose -f docker-compose.yml -f docker-compose.jetson.yml up
+#
+# Without this, ollama runs on the CPU - which on a Jetson is painfully slow.
+#
+# BEFORE THIS WORKS
+#   1. The Jetson needs the NVIDIA Container Toolkit. That is part of the
+#      "Flash Ubuntu on the Jetson" board item, not something Docker installs.
+#   2. BUILD ON THE JETSON. A Jetson is arm64; an image built on an x86 laptop
+#      will not run on it. `docker compose build` on the Jetson itself is the
+#      simplest correct answer.
+#
+# WHICH MODEL
+#   llama3.2 is the 3B model - it fits comfortably in Orin Nano memory
+#   alongside the OS and leaves room for the UI. If you are tight on memory,
+#   build with MODEL=llama3.2:1b; if you have an Orin NX or better, llama3.1:8b
+#   gives noticeably better reasoning on the harder complaints. Whatever you
+#   pick must be set in BOTH places below so the app asks for the model that
+#   was actually baked in.
+
+services:
+
+  ollama:
+    build:
+      args:
+        MODEL: llama3.2
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    environment:
+      # Keep the model resident in GPU memory. Reloading it is the slow part,
+      # and a demo where the second question takes 40 seconds looks broken.
+      OLLAMA_KEEP_ALIVE: 24h
+
+  vitals:
+    environment:
+      VITALS_OLLAMA_MODEL: llama3.2

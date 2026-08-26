@@ -1,0 +1,13 @@
+title: "2h post-EVA - deep shoulder ache and a marbled rash"
+narrative: >
+  Came in off the EVA about two hours ago. My left shoulder has this deep boring
+  ache, maybe a 7, and there is a weird blotchy marbled rash on my forearm.
+expect_top: decompression_sickness
+observations:
+  recent_decompression: true
+  joint_pain: 7
+  skin_mottling: true
+  pain_after_eva_training: true
+  confusion: false
+  balance_impaired: false
+  numbness_or_weakness: false

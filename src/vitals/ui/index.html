@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VITALS — spaceflight medical decision support</title>
+<style>
+:root{
+  --bg:#0b0f14; --panel:#121820; --panel2:#161e28; --line:#233040;
+  --ink:#dbe4ee; --dim:#8b9bb0; --faint:#5c6b7f;
+  --accent:#4da3ff; --ok:#2fbf71; --warn:#f0a437; --urgent:#ff7a45; --crit:#ff4d4d;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:15px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+.mono{font-family:ui-monospace,"Cascadia Code",Consolas,monospace}
+.wrap{max-width:860px;margin:0 auto;padding:24px 18px 80px}
+
+header{border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:18px}
+.title{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+h1{font-size:22px;margin:0;letter-spacing:.5px}
+.sub{color:var(--warn);font-size:12px;text-transform:uppercase;letter-spacing:1.4px}
+.status{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.pill{font-size:11.5px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);
+  background:var(--panel);color:var(--dim)}
+.pill.good{color:var(--ok);border-color:#1d4d38}
+.pill.bad{color:var(--crit);border-color:#5c2130}
+
+.banner{border-radius:8px;padding:11px 14px;margin:14px 0;font-size:13.5px;border:1px solid}
+.banner.info{background:#101821;border-color:var(--line);color:var(--dim)}
+.banner.crit{background:#2a1114;border-color:#7a2230;color:#ffd7d7}
+.banner.crit b{color:var(--crit);display:block;margin-bottom:4px;letter-spacing:1px}
+
+textarea{width:100%;min-height:88px;resize:vertical;background:var(--panel);
+  border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:12px 13px;
+  font:14.5px/1.5 inherit}
+textarea:focus{outline:none;border-color:var(--accent)}
+.row{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
+button{background:var(--accent);color:#04101d;border:0;border-radius:7px;padding:9px 18px;
+  font-weight:650;font-size:14px;cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.ghost{background:transparent;color:var(--dim);border:1px solid var(--line);font-weight:500}
+.chip{background:var(--panel2);border:1px solid var(--line);color:var(--dim);
+  border-radius:99px;padding:5px 12px;font-size:12.5px;cursor:pointer}
+.chip:hover{border-color:var(--accent);color:var(--ink)}
+
+.card{background:var(--panel);border:1px solid var(--line);border-left-width:3px;
+  border-radius:8px;padding:14px 16px;margin:12px 0}
+.card.routine{border-left-color:var(--faint)}
+.card.monitor{border-left-color:var(--accent)}
+.card.urgent{border-left-color:var(--urgent)}
+.card.emergency{border-left-color:var(--crit)}
+.chead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.cname{font-size:16px;font-weight:640}
+.tag{font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;padding:2px 7px;
+  border-radius:4px;border:1px solid var(--line);color:var(--dim)}
+.tag.urgent{color:var(--urgent);border-color:#66351f}
+.tag.emergency{color:var(--crit);border-color:#6b2028}
+.tag.monitor{color:var(--accent);border-color:#1d3a5c}
+.conf{font-size:12px;color:var(--dim)}
+.why{color:var(--dim);font-size:14px;margin:8px 0 4px}
+ul{margin:6px 0;padding-left:18px}
+li{margin:2px 0;font-size:13.5px}
+li.pro::marker{content:"+ ";color:var(--ok)}
+li.con::marker{content:"− ";color:var(--urgent)}
+.sect{font-size:11px;letter-spacing:1.3px;text-transform:uppercase;color:var(--faint);
+  margin:16px 0 6px}
+a{color:var(--accent)}
+.src{font-size:12.5px;color:var(--dim);margin:4px 0;word-break:break-word}
+
+details{background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  padding:10px 14px;margin:12px 0}
+summary{cursor:pointer;color:var(--dim);font-size:13px}
+table{width:100%;border-collapse:collapse;margin-top:8px;font-size:12.5px}
+td{padding:3px 8px 3px 0;color:var(--dim);vertical-align:top}
+td:first-child{color:var(--ink);white-space:nowrap}
+
+.load{display:flex;align-items:center;gap:11px;color:var(--dim);font-size:14px;
+  padding:16px 0}
+.spin{width:15px;height:15px;border:2px solid var(--line);border-top-color:var(--accent);
+  border-radius:50%;animation:s .8s linear infinite}
+@keyframes s{to{transform:rotate(360deg)}}
+.foot{margin-top:26px;padding-top:14px;border-top:1px solid var(--line);
+  color:var(--faint);font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="title">
+    <h1>VITALS</h1>
+    <span class="sub">Decision support — not a diagnosis</span>
+  </div>
+  <div class="status" id="status"><span class="pill">checking…</span></div>
+</header>
+
+<div class="banner info" id="sensorBanner">
+  <b>NO INSTRUMENTS ATTACHED.</b>
+  Everything below comes from what the crewmember said. No vital sign has been measured.
+</div>
+
+<label class="sect" for="complaint">Crewmember complaint</label>
+<textarea id="complaint" placeholder="Describe how you feel, in your own words. Include the flight day if you know it."></textarea>
+
+<div class="row">
+  <button id="go">Assess</button>
+  <button class="ghost" id="clear">Clear</button>
+</div>
+<div class="row" id="examples"></div>
+
+<div id="out"></div>
+
+<div class="foot">
+  VITALS runs entirely on this machine. The model reads a knowledge base of spaceflight
+  medical literature and may only name conditions from it; citations are looked up
+  from that knowledge base, never written by the model.
+  <br>NASA HUNCH 2026-27 · Software &amp; Technology
+</div>
+
+</div>
+<script>
+const $ = s => document.querySelector(s);
+const el = (t, c, txt) => { const n = document.createElement(t); if(c) n.className = c;
+  if(txt !== undefined) n.textContent = txt; return n; };
+
+const EXAMPLES = [
+  "flight day 2, I feel like I'm gonna throw up and it's way worse when I turn my head",
+  "flight day 63, bad pain in my right side, comes in waves, blood in my urine",
+  "been stuffed up since I got here, never really cleared, no fever",
+  "flight day 118, reading the procedure cards is getting harder, close up is blurry"
+];
+
+function addExamples(list){
+  const box = $("#examples");
+  box.innerHTML = "";
+  list.forEach(x => {
+    const text = typeof x === "string" ? x : x.text;
+    const label = text.length > 50 ? text.slice(0, 50) + "…" : text;
+    const c = el("button", "chip", label);
+    c.title = (x.category ? "[" + x.category + "] " : "") + text;
+    c.onclick = () => { $("#complaint").value = text; $("#complaint").focus(); };
+    box.appendChild(c);
+  });
+}
+addExamples(EXAMPLES);
+
+// Swap in the real prompt bank when the server has one - same prompts the
+// benchmark runs, so what you click is what gets scored.
+fetch("/api/examples").then(r => r.json()).then(d => {
+  if(!d.prompts || !d.prompts.length) return;
+  const pick = [];
+  const seen = new Set();
+  d.prompts.forEach(p => {
+    if(!seen.has(p.category)){ seen.add(p.category); pick.push(p); }
+  });
+  d.prompts.filter(p => !pick.includes(p)).slice(0, 3).forEach(p => pick.push(p));
+  addExamples(pick.slice(0, 6));
+}).catch(()=>{});
+
+async function health(){
+  const box = $("#status");
+  box.innerHTML = "";
+  try{
+    const h = await (await fetch("/api/health")).json();
+    box.appendChild(el("span","pill",`${h.kb.conditions} conditions · ${h.kb.findings} findings`));
+    if(h.ollama.up){
+      box.appendChild(el("span","pill good",`ollama up · ${h.model}`));
+      if(!h.ollama.has_default)
+        box.appendChild(el("span","pill bad",`'${h.model}' not pulled`));
+    } else {
+      box.appendChild(el("span","pill bad","ollama not running"));
+    }
+    box.appendChild(el("span","pill", h.sensors));
+    $("#sensorBanner").style.display = h.sensors === "no sensors connected" ? "" : "none";
+  }catch(e){
+    box.appendChild(el("span","pill bad","server unreachable"));
+  }
+}
+
+function render(d){
+  const out = $("#out");
+  out.innerHTML = "";
+
+  if(d.escalate){
+    const b = el("div","banner crit");
+    b.appendChild(el("b", null, "*** ESCALATE TO FLIGHT SURGEON ***"));
+    b.appendChild(document.createTextNode(d.escalation_reason || ""));
+    out.appendChild(b);
+  }
+
+  if(d.dropped && d.dropped.length){
+    out.appendChild(el("div","banner info",
+      `Dropped ${d.dropped.length} condition(s) the model invented: ${d.dropped.join(", ")}`));
+  }
+
+  if(!d.differential.length){
+    out.appendChild(el("div","banner info",
+      "The model found nothing in the knowledge base that fits. That is a real answer, not a failure — we have no rule for this yet. Log the case and take it to the flight surgeon."));
+  }
+
+  d.differential.forEach((c,i) => {
+    const card = el("div","card " + c.urgency);
+    const head = el("div","chead");
+    const left = el("div");
+    left.appendChild(el("span","cname", `${i+1}. ${c.name}`));
+    left.appendChild(document.createTextNode(" "));
+    left.appendChild(el("span","tag " + c.urgency, c.urgency));
+    head.appendChild(left);
+    head.appendChild(el("span","conf", c.confidence + " confidence"));
+    card.appendChild(head);
+
+    if(c.reasoning) card.appendChild(el("div","why", c.reasoning));
+
+    if(c.supporting.length || c.against.length){
+      const ul = el("ul");
+      c.supporting.forEach(s => ul.appendChild(el("li","pro", s)));
+      c.against.forEach(s => ul.appendChild(el("li","con", s)));
+      card.appendChild(ul);
+    }
+
+    if(i === 0){
+      card.appendChild(el("div","sect","Recommended next steps"));
+      const ul = el("ul");
+      c.recommend.forEach(r => ul.appendChild(el("li", null, r)));
+      card.appendChild(ul);
+
+      card.appendChild(el("div","sect","Sources — from the knowledge base, not the model"));
+      c.sources.forEach(s => {
+        const p = el("div","src");
+        const a = el("a", null, s.title);
+        a.href = s.url; a.target = "_blank"; a.rel = "noopener";
+        p.appendChild(a);
+        card.appendChild(p);
+      });
+    }
+    out.appendChild(card);
+  });
+
+  if(d.next_questions.length){
+    out.appendChild(el("div","sect","Ask these next — click to add"));
+    const row = el("div","row");
+    d.next_questions.forEach(q => {
+      const clean = q.replace(/\s*\[[a-z0-9_]+\]\s*$/,"");
+      const c = el("button","chip", clean.length > 54 ? clean.slice(0,54)+"…" : clean);
+      c.title = clean;
+      c.onclick = () => {
+        $("#complaint").value = ($("#complaint").value.trim() + "  " + clean + " ").trim() + " ";
+        $("#complaint").focus();
+      };
+      row.appendChild(c);
+    });
+    out.appendChild(row);
+  }
+
+  if(d.uncertainty){
+    out.appendChild(el("div","banner info","Least certain about: " + d.uncertainty));
+  }
+
+  // trace
+  const det = el("details");
+  det.appendChild(el("summary","", "What the system saw  ·  " + d.elapsed + "s  ·  " + d.model));
+  const cc = d.trace.crosscheck;
+  const ccBox = el("div","banner " + (cc.state === "disagree" ? "crit" : "info"));
+  ccBox.textContent = "Deterministic engine cross-check — " + cc.text;
+  det.appendChild(ccBox);
+
+  det.appendChild(el("div","sect","Findings extracted from the text"));
+  const t1 = el("table");
+  const f = d.trace.findings;
+  if(Object.keys(f).length === 0){
+    det.appendChild(el("div","src","none"));
+  } else {
+    Object.entries(f).forEach(([k,v]) => {
+      const tr = el("tr");
+      tr.appendChild(el("td","mono",k));
+      tr.appendChild(el("td","mono",String(v)));
+      t1.appendChild(tr);
+    });
+    det.appendChild(t1);
+  }
+
+  det.appendChild(el("div","sect","Knowledge base sent to the model"));
+  const t2 = el("table");
+  d.trace.retrieved.forEach(r => {
+    const tr = el("tr");
+    tr.appendChild(el("td","mono", r.score.toFixed(1)));
+    tr.appendChild(el("td", null, r.name + " — " + r.why));
+    t2.appendChild(tr);
+  });
+  det.appendChild(t2);
+  out.appendChild(det);
+}
+
+async function assess(){
+  const complaint = $("#complaint").value.trim();
+  if(!complaint) return;
+
+  $("#go").disabled = true;
+  const out = $("#out");
+  out.innerHTML = "";
+  const load = el("div","load");
+  load.appendChild(el("div","spin"));
+  const msg = el("div","","asking the model…");
+  load.appendChild(msg);
+  out.appendChild(load);
+
+  const t0 = Date.now();
+  const tick = setInterval(() => {
+    const s = Math.round((Date.now()-t0)/1000);
+    msg.textContent = `asking the model… ${s}s` +
+      (s > 8 ? "  (first run loads the model into RAM — this can take a minute)" : "");
+  }, 500);
+
+  try{
+    const res = await fetch("/api/ask", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({complaint})
+    });
+    const d = await res.json();
+    clearInterval(tick);
+    if(!d.ok){
+      out.innerHTML = "";
+      const b = el("div","banner crit");
+      b.appendChild(el("b",null,"COULD NOT ANSWER"));
+      b.appendChild(el("div","mono", d.error || "unknown error"));
+      out.appendChild(b);
+    } else {
+      render(d);
+    }
+  }catch(e){
+    clearInterval(tick);
+    out.innerHTML = "";
+    out.appendChild(el("div","banner crit","Request failed: " + e.message));
+  }finally{
+    $("#go").disabled = false;
+  }
+}
+
+$("#go").onclick = assess;
+$("#clear").onclick = () => { $("#complaint").value=""; $("#out").innerHTML=""; };
+$("#complaint").addEventListener("keydown", e => {
+  if((e.ctrlKey||e.metaKey) && e.key === "Enter") assess();
+});
+health();
+</script>
+</body>
+</html>

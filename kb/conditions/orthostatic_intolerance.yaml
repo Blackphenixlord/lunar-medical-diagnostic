@@ -1,0 +1,60 @@
+id: orthostatic_intolerance
+name: Orthostatic Intolerance from Cardiovascular Deconditioning
+aka: [post-landing orthostatic intolerance, OI]
+category: cardiovascular
+urgency: urgent
+prior: 0.20
+
+description: >
+  Lightheadedness, tachycardia and near-fainting on standing after a gravity
+  transition, from reduced plasma volume and a deconditioned baroreflex.
+
+microgravity_note: >
+  This is the one condition on the list that is DANGEROUS ON THE GROUND, not
+  on orbit. Weeks of headward fluid shift make the body shed plasma volume
+  and let the baroreflex go slack; the moment gravity returns there is not
+  enough blood to keep the brain perfused when the crewmember stands. Peak
+  risk is the first hours to days after landing, which is exactly when a
+  crewmember might need to exit a vehicle unaided. The recent_gravity_transition
+  finding is close to mandatory - without it, look elsewhere.
+
+findings:
+  - finding: presyncope
+    weight: 2.6
+    absent_weight: -1.8
+  - finding: recent_gravity_transition
+    weight: 2.4
+    absent_weight: -2.2
+    note: Nearly required. No transition, almost certainly not this.
+  - finding: hr_elevated
+    weight: 1.8
+  - finding: fatigue
+    weight: 0.8
+  - finding: cold_sweat
+    weight: 1.0
+  - finding: nausea
+    weight: 0.6
+  - finding: shortness_of_breath
+    weight: 0.5
+  - finding: chest_pain
+    weight: -0.5
+    note: Chest pain shifts suspicion to a cardiac or thromboembolic cause.
+  - finding: fever
+    weight: -1.2
+
+red_flags: [chest_pain, shortness_of_breath]
+
+recommend:
+  - Keep the crewmember seated or recumbent. Do not let them stand unassisted.
+  - Fluid and salt loading per the flight surgeon's countermeasure protocol.
+  - Compression garment for the lower body if available.
+  - Check heart rate and blood pressure supine and seated; document the delta.
+  - Escalate immediately for chest pain, shortness of breath, or a loss of consciousness - those are not simple deconditioning.
+
+differential: [jugular_vte, sleep_disruption_circadian]
+
+sources:
+  - title: "Medical Operations and Clinical Care - NASA"
+    url: "https://www.nasa.gov/reference/medical-operations-and-clinical-care/"
+  - title: "Managing Risks to Astronaut Health - Safe Passage (NCBI Bookshelf)"
+    url: "https://www.ncbi.nlm.nih.gov/books/NBK223777/"

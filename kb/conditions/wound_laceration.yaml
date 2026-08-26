@@ -1,0 +1,77 @@
+id: wound_laceration
+name: Laceration or Open Wound
+aka: [cut, laceration, skin trauma]
+category: trauma
+urgency: monitor
+prior: 0.06
+
+description: >
+  A break in the skin from a cut, tear or puncture. The question is never
+  really "is this a cut" - it is whether it needs closure, whether it is
+  contaminated, and whether it is getting infected. Urgency is `monitor`, not
+  `urgent`: a small closed cut should not page the ground. The branches that
+  should - uncontrolled bleeding, a wound that needs closing, spreading
+  infection, a foreign body, nerve involvement - are all red_flags.
+
+microgravity_note: >
+  Two things change. First, BLOOD DOES NOT FALL. It pools in surface tension
+  domes and floats free as droplets, which is a contamination and equipment
+  problem for the whole vehicle as much as a clinical one - free blood has to
+  be captured, not mopped. Second, the vehicle is a closed loop with an altered
+  crew immune profile and a finite antibiotic supply, so an infected wound is a
+  much worse outcome than the same wound on Earth. Crew basic training covers
+  stitching a wound, so closure is genuinely available - but there is no
+  imaging beyond ultrasound, no surgeon, and evacuation is days away.
+
+findings:
+  - finding: open_wound
+    weight: 3.0
+    absent_weight: -3.0
+    required: true
+    note: Physical fact. No wound, not this.
+  - finding: bleeding_uncontrolled
+    weight: 2.4
+    note: Bleeding that will not stop with pressure is the emergency branch.
+  - finding: wound_gaping
+    weight: 2.0
+    note: Edges that fall open need closure. This is the finding that decides suture vs dressing.
+  - finding: foreign_body
+    weight: 2.0
+    note: Metal, glass or debris in the wound changes everything - do not close over it.
+  - finding: wound_spreading_redness
+    weight: 2.4
+    note: Spreading redness or pus means infection. On a closed vehicle that escalates fast.
+  - finding: fever
+    weight: 1.8
+    note: Fever plus a wound is systemic infection until proven otherwise.
+  - finding: numbness_or_weakness
+    weight: 1.6
+    note: Numbness or weakness past the wound means nerve or tendon involvement.
+  - finding: tetanus_status_unknown
+    weight: 1.0
+  - finding: pain_after_eva_training
+    weight: 0.4
+    note: Hand injuries in and around suited work are common.
+
+red_flags: [bleeding_uncontrolled, wound_gaping, wound_spreading_redness, fever, foreign_body, numbness_or_weakness]
+
+recommend:
+  - Direct firm pressure first. Capture free blood - in microgravity it floats and contaminates.
+  - Irrigate thoroughly. Contamination is the main driver of everything that goes wrong later.
+  - Do NOT close a wound with a foreign body still in it, and do not close a heavily contaminated one.
+  - Gaping edges need closure; crew training covers suturing, but confirm with the flight surgeon first.
+  - Photograph the wound and downlink. Re-photograph daily - a spreading margin is much easier to see in a series than in the moment.
+  - Mark the edge of any redness with a pen and time it. If it moves outward, that is spreading infection.
+  - Escalate immediately for bleeding that will not stop, numbness or weakness beyond the wound, or fever.
+
+differential: [msk_shoulder_overuse, urti]
+
+sources:
+  - title: "Medical Operations and Clinical Care - NASA"
+    url: "https://www.nasa.gov/reference/medical-operations-and-clinical-care/"
+    note: Crew basic medical training includes how to stitch a wound; ISS ultrasound is the imaging capability.
+  - title: "Risk of Adverse Health Outcomes and Decrements in Performance due to In-flight Medical Conditions - NASA"
+    url: "https://www.nasa.gov/directorates/esdmd/hhp/risk-of-adverse-health-outcomes-and-decrements-in-performance-due-to-inflight-medical-conditions/"
+  - title: "Predictive modelling of in-flight musculoskeletal and injury events - NASA NTRS"
+    url: "https://ntrs.nasa.gov/api/citations/20110008743/downloads/20110008743.pdf"
+    note: In-flight injury counts across US operations.
