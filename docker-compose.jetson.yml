@@ -5,6 +5,12 @@
 #
 # Without this, ollama runs on the CPU - which on a Jetson is painfully slow.
 #
+# Compose merges files BY SERVICE NAME. A service here only changes the service
+# of the same name in docker-compose.yml; a new name silently declares a second,
+# unrelated service. That exact bug shipped once (`vitals` here, `mdx` there),
+# so check `docker compose -f docker-compose.yml -f docker-compose.jetson.yml config`
+# after renaming anything.
+#
 # BEFORE THIS WORKS
 #   1. The Jetson needs the NVIDIA Container Toolkit. That is part of the
 #      "Flash Ubuntu on the Jetson" board item, not something Docker installs.
@@ -13,19 +19,17 @@
 #      simplest correct answer.
 #
 # WHICH MODEL
-#   llama3.2 is the 3B model - it fits comfortably in Orin Nano memory
-#   alongside the OS and leaves room for the UI. If you are tight on memory,
-#   build with MODEL=llama3.2:1b; if you have an Orin NX or better, llama3.1:8b
-#   gives noticeably better reasoning on the harder complaints. Whatever you
-#   pick must be set in BOTH places below so the app asks for the model that
-#   was actually baked in.
+#   llama3.2 (3B, the default) fits comfortably in Orin Nano memory alongside
+#   the OS and the UI. Tight on memory: llama3.2:1b. Orin NX or better:
+#   llama3.1:8b reasons noticeably better on the harder complaints.
+#   Set it ONCE, with VITALS_OLLAMA_MODEL - docker-compose.yml feeds that one
+#   variable to both the model bake and the app:
+#
+#   VITALS_OLLAMA_MODEL=llama3.2:1b docker compose -f docker-compose.yml -f docker-compose.jetson.yml build
 
 services:
 
   ollama:
-    build:
-      args:
-        MODEL: llama3.2
     deploy:
       resources:
         reservations:
@@ -37,7 +41,3 @@ services:
       # Keep the model resident in GPU memory. Reloading it is the slow part,
       # and a demo where the second question takes 40 seconds looks broken.
       OLLAMA_KEEP_ALIVE: 24h
-
-  vitals:
-    environment:
-      VITALS_OLLAMA_MODEL: llama3.2

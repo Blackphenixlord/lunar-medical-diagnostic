@@ -14,13 +14,13 @@ from urllib.error import HTTPError
 
 import pytest
 
-from mdx import load_kb
-from mdx.server import Handler, UI_DIR, _run_pipeline
+from vitals import load_knowledge_base
+from vitals.server import Handler, UI_DIR, run_pipeline
 
 
 @pytest.fixture(scope="module")
 def kb():
-    return load_kb()
+    return load_knowledge_base()
 
 
 @pytest.fixture(scope="module")
@@ -38,7 +38,7 @@ def server(kb):
 
 def test_index_is_served(server):
     body = urlopen(server + "/").read().decode()
-    assert "<title>MDX" in body
+    assert "<title>VITALS" in body
 
 
 def test_page_says_it_is_not_a_diagnosis(server):
@@ -118,7 +118,7 @@ def test_pipeline_shape_matches_what_the_ui_expects(kb, monkeypatch):
 
     monkeypatch.setattr("urllib.request.urlopen", lambda *a, **k: _Resp())
 
-    d = _run_pipeline(kb, "flight day 63, pain in my right side in waves, blood in my urine", "llama3.2")
+    d = run_pipeline(kb, "flight day 63, pain in my right side in waves, blood in my urine", "llama3.2")
 
     for key in ("ok", "elapsed", "model", "sensor_status", "escalate", "escalation_reason",
                 "uncertainty", "next_questions", "dropped", "differential", "trace"):

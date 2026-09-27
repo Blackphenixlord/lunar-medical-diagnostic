@@ -1,24 +1,47 @@
-# MDX — one command to run the whole system.
+# VITALS — one command to run the whole system.
 #
-#   docker compose up
+#   docker compose build      once, WITH a network - bakes the model into an image
+#   docker compose up         any time after, with or without one
 #   -> http://localhost:8000
 #
 # Two containers on purpose:
-#   ollama  the language model. Big, slow to pull, changes almost never.
-#   mdx     the engine, knowledge base and UI. Small, changes constantly.
+#   ollama  the language model. Big, slow to build, changes almost never.
+#   vitals  the engine, knowledge base and UI. Small, changes constantly.
 #
 # Keeping them apart means editing a diagnostic rule rebuilds a 200MB image in
 # seconds instead of re-downloading a 2GB model.
+#
+# CHOOSING THE MODEL - one variable, read in both places below, so the model the
+# app asks for is always the model that was baked in:
+#
+#   VITALS_OLLAMA_MODEL=llama3.2:1b docker compose build
+#   VITALS_OLLAMA_MODEL=llama3.2:1b docker compose up
+#
+# (Or put VITALS_OLLAMA_MODEL=... in a .env file next to this one.)
 
 services:
 
   ollama:
-    image: ollama/ollama:latest
-    container_name: mdx-ollama
+    # Built, not pulled. The stock ollama/ollama image ships with NO models, so
+    # the first question of the day would be a 3GB download - on a locked-down
+    # school or JSC network that is a failure, not a wait.
+    # See docker/ollama.Dockerfile.
+    build:
+      context: ./docker
+      dockerfile: ollama.Dockerfile
+      args:
+        MODEL: ${VITALS_OLLAMA_MODEL:-llama3.2}
+    image: vitals-ollama:latest
+    container_name: vitals-ollama
     ports:
-      - "11434:11434"          # exposed so `python -m mdx ask` works outside docker too
+      - "11434:11434"          # exposed so `python -m vitals ask` works outside docker too
     volumes:
-      - ollama-models:/root/.ollama   # models survive `docker compose down`
+      # Extra models pulled at runtime survive `docker compose down`.
+      # A NEW, empty named volume is seeded from the image, so the baked model
+      # shows up in it. An OLD volume is not re-seeded and would hide the baked
+      # model - which is why this is not the old `ollama-models` volume.
+      # Changed the model and it seems missing?  docker compose down -v
+      - vitals-ollama-models:/root/.ollama
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "ollama list >/dev/null 2>&1 || exit 1"]
@@ -27,14 +50,15 @@ services:
       retries: 12
       start_period: 20s
 
-  mdx:
+  vitals:
     build: .
-    container_name: mdx-app
+    image: vitals-app:latest
+    container_name: vitals-app
     ports:
       - "8000:8000"
     environment:
       OLLAMA_HOST: http://ollama:11434
-      MDX_OLLAMA_MODEL: ${MDX_OLLAMA_MODEL:-llama3.2}
+      VITALS_OLLAMA_MODEL: ${VITALS_OLLAMA_MODEL:-llama3.2}
     depends_on:
       ollama:
         condition: service_healthy
@@ -47,4 +71,4 @@ services:
       - ./cases:/app/cases:ro
 
 volumes:
-  ollama-models:
+  vitals-ollama-models:

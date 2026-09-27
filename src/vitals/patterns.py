@@ -6,7 +6,7 @@ do not bury the twenty lines of logic that use them.
 
 WHO EDITS THIS
     Cruz. Every phrasing user testing turns up that we did not anticipate goes
-    in here. That IS the test data - `tests/test_llm.py` reads these tables.
+    in here. That IS the test data - `tests/test_extract.py` reads these tables.
 
 HOW TO ADD ONE
     Find the finding id in kb/findings.yaml, add a lowercase regex to its list.

@@ -1,4 +1,4 @@
-# MDX prompt bank
+# VITALS prompt bank
 # ---------------
 # Realistic crewmember complaints for testing the system end to end.
 #
@@ -15,7 +15,7 @@
 # escalate: true when a flight surgeon should be pulled in.
 # why: what this prompt is testing. If you cannot say why, it does not belong.
 #
-# Add to this file whenever someone phrases something in a way MDX misses.
+# Add to this file whenever someone phrases something in a way VITALS misses.
 # That is the single most useful contribution a non-programmer can make.
 
 version: 1

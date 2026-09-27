@@ -6,13 +6,13 @@ import os
 import pytest
 import yaml
 
-from mdx import load_kb, diagnose
-from mdx.engine import support_for, next_best_questions
+from vitals import load_knowledge_base, diagnose
+from vitals.engine import support_for, next_best_questions
 
 
 @pytest.fixture(scope="module")
 def kb():
-    return load_kb()
+    return load_knowledge_base()
 
 
 # --- the core safety property ---------------------------------------------

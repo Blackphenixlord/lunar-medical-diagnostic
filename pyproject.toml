@@ -1,0 +1,43 @@
+# Lets `pip install -e .` put `vitals` on the path, so nobody has to set
+# PYTHONPATH=src by hand (and nobody has to explain PowerShell env vars).
+#
+# EDITABLE INSTALL ONLY (-e). The code finds kb/ and prompts/ relative to the
+# source tree (knowledge_base.py, bench.py), so a plain `pip install .` would
+# install the code without the knowledge base next to it.
+#
+# Docker does not use this - it sets PYTHONPATH=/app/src and installs
+# requirements.txt. Keep the dependency lists here and there in step.
+
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vitals"
+dynamic = ["version"]
+description = "VITALS - spaceflight medical decision support. Team TETHER, NASA HUNCH 2026-27."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "PyYAML>=6.0",
+    "jsonschema>=4.20",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+vitals = "vitals.cli:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "vitals.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+vitals = ["ui/*.html"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

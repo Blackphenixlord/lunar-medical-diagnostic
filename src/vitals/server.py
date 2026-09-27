@@ -89,9 +89,6 @@ def run_pipeline(knowledge_base, complaint: str, model: str) -> dict[str, Any]:
     }
 
 
-# Kept under the old private name because tests import it directly.
-_run_pipeline = run_pipeline
-
 
 def _crosscheck(knowledge_base, observations: dict, answer) -> dict[str, str]:
     """How the deterministic engine voted on the same observations."""

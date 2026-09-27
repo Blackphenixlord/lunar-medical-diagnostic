@@ -40,7 +40,7 @@ engine escalates to the flight surgeon rather than pretending to be one.
 ## Quick start
 
 ```bash
-pip install -r requirements.txt
+pip install -e ".[dev]"                  # once - puts `vitals` on the path
 
 # one-time: get a local model
 ollama pull llama3.2
@@ -64,8 +64,8 @@ python -m vitals explain sans             # show a condition and its sources
 pytest tests -q                        # 111 tests
 ```
 
-If `python -m vitals` cannot find the package, set `PYTHONPATH=src` first
-(Windows PowerShell: `$env:PYTHONPATH="src"`).
+Skipped the `pip install -e` step? Then `python -m vitals` cannot find the
+package - set `PYTHONPATH=src` first (Windows PowerShell: `$env:PYTHONPATH="src"`).
 
 ---
 
@@ -189,14 +189,21 @@ second question takes 40 seconds looks broken. It needs the NVIDIA Container
 Toolkit on the host, which is part of the *"Flash Ubuntu on the Jetson"* board
 item, not something Docker installs.
 
-`llama3.2` is the 3B model and fits comfortably in Orin Nano memory. Tight on
-memory? `docker compose build --build-arg MODEL=llama3.2:1b`. Orin NX or
-better? `llama3.1:8b` reasons noticeably better on the harder complaints. Set
-it in **both** places in `docker-compose.jetson.yml` so the app asks for the
-model that was actually baked in.
+`llama3.2` is the 3B model and fits comfortably in Orin Nano memory. Orin NX
+or better? `llama3.1:8b` reasons noticeably better on the harder complaints.
 
-Anywhere else, pick a model with
-`VITALS_OLLAMA_MODEL=phi3:mini docker compose build`.
+Pick the model with **one** variable. `docker-compose.yml` feeds it to both the
+model bake and the app, so the app always asks for the model that was baked in:
+
+```bash
+VITALS_OLLAMA_MODEL=llama3.1:8b docker compose -f docker-compose.yml -f docker-compose.jetson.yml build
+```
+
+Do not use `--build-arg MODEL=...` - that changes the bake but not the app.
+
+**Tight on memory and thinking of `llama3.2:1b`? Bench it first.** On the renal
+colic demo it ranked routine back pain first and invented a symptom the
+crewmember never mentioned (the code still escalated). See `docs/NEXT_STEPS.md`.
 
 The build runs `python -m vitals validate` and **fails if the knowledge base is
 broken** — a container that starts with an invalid KB is worse than one that

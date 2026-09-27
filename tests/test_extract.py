@@ -80,7 +80,7 @@ def test_stuffed_up_is_congestion(kb, ex):
 def test_auto_falls_back_to_keyword_when_nothing_local_is_running(monkeypatch):
     from vitals.extract import OllamaExtractor
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
-    monkeypatch.delenv("MDX_BACKEND", raising=False)
+    monkeypatch.delenv("VITALS_BACKEND", raising=False)
     monkeypatch.setattr(OllamaExtractor, "is_available", staticmethod(lambda *a, **k: False))
     assert get_extractor("auto").name == "keyword"
 
@@ -89,7 +89,7 @@ def test_auto_prefers_local_ollama_over_cloud(monkeypatch):
     """Local model beats the API. The offline path is the one that has to work."""
     from vitals.extract import OllamaExtractor
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-not-a-real-key")
-    monkeypatch.delenv("MDX_BACKEND", raising=False)
+    monkeypatch.delenv("VITALS_BACKEND", raising=False)
     monkeypatch.setattr(OllamaExtractor, "is_available", staticmethod(lambda *a, **k: True))
     assert get_extractor("auto").name == "ollama"
 

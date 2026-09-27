@@ -1,89 +1,126 @@
 # Where this stands and what to do next
 
-Built 21 Aug 2026. Rearchitected the same day: **ollama is the reasoner, the KB grounds it.**
-14 conditions, 72 findings, 111 tests passing.
+Updated 26 Sep 2026. Everything marked **verified** below was actually run,
+not assumed.
+
+14 conditions, 72 findings. `pytest tests -q` collects **111 tests and all
+pass** (104 test functions; the demo-case test runs once per file in `cases/`).
 
 ## Architecture (current)
-`python -m mdx serve` opens the web UI. `python -m mdx ask "..."` is the same pipeline on the CLI. Pipeline: extract findings -> retrieve
-relevant KB conditions -> attach sensor readings (none yet) -> ollama answers ->
-citations looked up from the KB, never written by the model.
 
-The deterministic engine is now a **cross-check** (`--crosscheck`), not the answer.
-Its weights were invented and the model never sees them.
+**Ollama is the reasoner. The knowledge base grounds it.**
 
-Sensors: `src/mdx/sensors.py` defines the contract and implements nothing, because
-no hardware is attached. It reports "no sensors connected" and returns no readings.
-It does NOT fabricate a plausible vital sign.
-
-## Board items this closes
-
-| Monday item | Due | Status |
-|---|---|---|
-| Define the knowledge base file format (JSON or YAML) | Sep 18 | **Done** — `docs/KNOWLEDGE_BASE_FORMAT.md`. YAML for rules, JSON Schema for validation. |
-| Write the first 10 diagnostic rules together | Sep 25 | **Done, needs review** — 11 rules in `kb/conditions/`, all cited. Joaquin still has to check the medicine. |
-| Research medical conditions specific to spaceflight | Sep 18 | **First pass done** — `docs/RESEARCH_spaceflight_conditions.md`, with a gaps list. |
-| Set up GitHub repo + agree on file structure | Aug 28 | Structure exists here. Still needs `git init` and a remote. |
-
-## FIRST THING: git
-
-Git was first initialised over the Claude device bridge, which cannot delete
-files. Git needs to delete its own lock files, so it left a stuck
-`.git\index.lock` and git will refuse to run until it is cleared.
-
-Fix, from the repo root on Windows:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\init_git.ps1
+```
+complaint -> extract.py (findings) -> retrieval.py (select KB conditions)
+          -> sensors.py (measured vitals - none yet) -> reason.py (ollama answers)
+          -> citations looked up from the KB, never written by the model
 ```
 
-That wipes the half-made `.git`, makes a clean one locally, and commits
-everything with a full first-commit message. It does not touch source files.
-Then make an EMPTY repo at github.com/new and push. Add Cruz and Joaquin.
+- `python -m vitals ask "..."` is the main path. `python -m vitals serve` is the
+  same pipeline behind the browser UI (`src/vitals/ui/index.html`, owned by Cruz -
+  see `UI_ACCEPTANCE_CRITERIA.md` in the project docs).
+- The deterministic engine (`engine.py` + `scoring.py`) is a **cross-check**
+  (`--crosscheck`), not the answer. Its weights were invented and the model
+  never sees them - a test fails if a number leaks into the model's context.
+- `sensors.py` defines the contract and implements nothing: no hardware is
+  attached. It reports "no sensors connected" and never fabricates a vital sign.
+
+## Running it
+
+```bash
+pip install -e .                          # once; after this no PYTHONPATH needed
+python -m vitals validate                 # KB VALID, 14 conditions, 72 findings
+pytest tests -q                           # 111 passed
+python -m vitals ask "..." --crosscheck
+```
+
+### Docker - verified offline, 26 Sep
+
+```bash
+docker compose build       # once, WITH a network: bakes the model into an image
+docker compose up          # any time after -> http://localhost:8000, NO internet needed
+```
+
+Tested with both containers on a Docker network with no internet route at all:
+the app found the baked model, and `vitals ask` answered the renal colic demo
+correctly with the default `llama3.2`, cross-check agreeing. About 2.5 minutes
+per answer on a laptop CPU - the Jetson GPU should be much faster, but that is
+not measured yet.
+
+One variable picks the model for both containers:
+`VITALS_OLLAMA_MODEL=llama3.2:1b docker compose build`.
+
+**Warning about `llama3.2:1b`.** On the same renal colic complaint the 1B model
+ranked routine back pain first and invented a symptom ("worsens with head
+movement") the crewmember never said. The code still escalated - it caught the
+urgent condition in the list - but the reasoning shown was wrong. Do not demo
+on 1B without running `python -m vitals bench` on it first.
+
+Changed the model and it seems missing? The named volume only seeds from the
+image the first time: `docker compose down -v`, then `up` again.
+
+Jetson: build ON the Jetson (arm64). The GPU overlay now merges correctly
+(`docker compose -f docker-compose.yml -f docker-compose.jetson.yml config`
+shows two services, not three), but GPU passthrough on the actual board is
+**not verified** - nobody has run it on the Jetson yet.
 
 ## Immediate
 
-1. `git init`, first commit, push. Nothing here is backed up yet.
-2. Joaquin reviews every weight in `kb/conditions/`. He does not need to touch
-   Python — see the checklist at the end of `KNOWLEDGE_BASE_FORMAT.md`.
-3. Cruz runs `python -m mdx describe "..."` with the way *real people* actually
-   describe symptoms. Every phrase it misses is a test case. That is genuine
-   user-testing data for the portfolio, not busywork.
+1. **Joaquin** reviews every weight and red flag in `kb/conditions/`. No Python
+   needed - checklist at the end of `KNOWLEDGE_BASE_FORMAT.md`.
+2. **Cruz** runs `python -m vitals ask "..."` with the way real people actually
+   describe symptoms. Every missed phrasing goes to Joshua for `patterns.py`.
+   That is genuine user-testing data for PDR, not busywork.
+3. Run `python -m vitals bench` against the model you will actually demo on,
+   and keep the dated result.
 
 ## Still blocked on a human
 
-- **A real medical source** (nurse / EMT / doctor) to sanity-check the weights.
-  Open CRITICAL item on the board, and the biggest credibility risk at review.
-  Rules written from literature by three students are a starting point, not a
-  validated knowledge base — say that out loud at PDR before a judge says it for you.
-- **The requirements doc from Hayes** — the interface and output format may have
-  to change to match what HUNCH actually asks for. Do not gold-plate the CLI
-  until that arrives.
+- **A real medical source** (nurse / EMT / doctor) to sanity-check the rules.
+  The biggest credibility risk at review. Rules written from literature by
+  three students are a starting point, not a validated knowledge base - say so
+  at PDR before a judge does.
+- **The requirements doc from Hayes** - the interface and output format may
+  have to change. Do not gold-plate the CLI or UI until it arrives.
+- Team number, Space Act Agreement, parts order.
 
 ## Design decisions to have memorized before PDR
 
-Judges ask these. Answers are in the README, but know them cold:
+1. *Why not train a machine-learning model?* No training data. NASA's own
+   papers say in-flight medical event data is severely limited, and several of
+   our conditions have zero recorded in-flight cases. A model trained on that
+   would fit noise and could not explain itself. So we use a pretrained local
+   language model to reason, and ground it in a cited knowledge base.
 
-1. *Why not machine learning?* No training data — NASA's own papers say
-   in-flight medical event data is severely limited, and several of our
-   conditions have zero recorded in-flight incidence. A learned model would fit
-   noise and could not explain itself.
-2. *What happens when the AI hallucinates?* The LLM only extracts findings; it
-   never diagnoses. Worst case is a missed finding, not an invented diagnosis.
-   The engine is deterministic and runs offline.
-3. *Why does it say 99% instead of just naming the disease?* Because it is
-   decision support. It shows the arithmetic and escalates to the flight surgeon.
-   A tool that says "you have a kidney stone" is claiming an authority it has not got.
-4. *Why is a 0.5% condition allowed to be at the top of the list?* It is not,
-   automatically — ranking is by probability only. We tried floating urgent
-   conditions and it put a 9% renal stone above a 99% head cold. Safety is a
-   separate channel: escalation prints above the list.
+2. *What happens when the AI hallucinates?* The code limits what the model can
+   do, and checks what it says:
+   - it can only name conditions that retrieval handed it - an invented
+     condition is dropped and reported;
+   - it never writes a citation - it returns an id, and we look up the source
+     in the knowledge base;
+   - temperature 0, so the same complaint gives the same answer and tests exist;
+   - if it names an urgent or emergency condition and forgets to escalate, the
+     code escalates anyway;
+   - `--crosscheck` runs a fully deterministic engine on the same findings and
+     shows where the two disagree.
+   Be honest that it can still write wrong *reasoning* - the 1B test above is
+   the example. That is why a human decides and the tool escalates.
+
+3. *Why no percentages on screen?* The prior and weight numbers were invented
+   by us, not taken from a source. Showing "99%" would claim a precision we do
+   not have. The model reports high / moderate / low confidence instead, and
+   the UI criteria forbid percentages.
+
+4. *Why not float urgent conditions to the top of the list?* We tried. It put a
+   9% renal stone above a 99% head cold because both rules mention fever. A
+   ranking you cannot trust is worse than none. Safety is a separate channel:
+   escalation prints above the list.
 
 ## Known gaps
 
-- No decompression sickness, radiation, dental, or trauma rules yet.
-- Behavioral health deliberately excluded from v1 — a scoring engine is the
-  wrong tool and a wrong answer there does real harm. Be ready to defend that
-  as a choice, not an omission.
-- The keyword extractor is regex. It will miss phrasings. That is fine and
-  expected — it is the offline floor, not the ceiling.
-- No UI yet. Cruz's paper sketches (board item, due Sep 11) come before any code.
+- No radiation, behavioral health, or trauma-beyond-laceration rules.
+  Behavioral health is excluded on purpose - be ready to defend that as a
+  choice, not an omission.
+- The keyword extractor is regex. It will miss phrasings. That is the offline
+  floor, not the ceiling.
+- No sensor hardware wired in yet - see the hardware notes in the project docs.

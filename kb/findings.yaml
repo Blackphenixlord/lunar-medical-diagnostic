@@ -1,4 +1,4 @@
-# MDX finding vocabulary
+# VITALS finding vocabulary
 # ----------------------
 # Every `finding:` id referenced by a condition file MUST exist here.
 # This is the controlled vocabulary. It stops two people writing

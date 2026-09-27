@@ -1,4 +1,4 @@
-# MDX — spaceflight medical diagnostic decision support
+# VITALS — spaceflight medical decision support (team TETHER)
 # NASA HUNCH 2026-27
 #
 # This image contains the ENGINE and the UI only. The language model lives in a
@@ -32,13 +32,13 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 ENV PYTHONPATH=/app/src \
     PYTHONUNBUFFERED=1 \
     OLLAMA_HOST=http://ollama:11434 \
-    MDX_OLLAMA_MODEL=llama3.2
+    VITALS_OLLAMA_MODEL=llama3.2
 
 EXPOSE 8000
 
 # Fail the build if the knowledge base is broken. A container that starts with
 # an invalid KB is worse than one that refuses to build.
-RUN python -m mdx validate
+RUN python -m vitals validate
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD curl -fsS http://localhost:8000/api/health || exit 1
@@ -49,4 +49,4 @@ ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/entrypoint.sh"]
 
 # 0.0.0.0, not 127.0.0.1. Inside a container, localhost means "this container",
 # so binding to loopback would make the UI unreachable from your browser.
-CMD ["python", "-m", "mdx", "serve", "--host", "0.0.0.0", "--port", "8000", "--no-open"]
+CMD ["python", "-m", "vitals", "serve", "--host", "0.0.0.0", "--port", "8000", "--no-open"]

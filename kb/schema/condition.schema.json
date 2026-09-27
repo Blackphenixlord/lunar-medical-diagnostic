@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://nasahunch.local/schema/condition.schema.json",
-  "title": "MDX Condition",
-  "description": "One diagnosable condition in the MDX knowledge base. One YAML file per condition in kb/conditions/.",
+  "title": "VITALS Condition",
+  "description": "One diagnosable condition in the VITALS knowledge base. One YAML file per condition in kb/conditions/.",
   "type": "object",
   "required": ["id", "name", "category", "urgency", "prior", "findings", "sources"],
   "additionalProperties": false,
