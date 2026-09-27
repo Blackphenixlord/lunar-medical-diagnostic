@@ -73,16 +73,17 @@ def cmd_ask(args) -> int:
     finally:
         print(f"\r{' ' * 70}\r", end="")     # wipe the "asking ..." line
 
-    render.model_answer(answer, time.time() - started)
+    elapsed = time.time() - started
 
+    crosscheck_result = None
     if args.crosscheck:
-        engine_result = diagnose(knowledge_base, observations)
-        render.crosscheck(
-            model_top_id=answer.top.condition_id if answer.top else None,
-            engine_top_id=engine_result.top.id if engine_result.top else None,
+        engine_top = diagnose(knowledge_base, observations).top
+        crosscheck_result = (
+            engine_top.name if engine_top else None,
+            answer.top.name if answer.top else None,
         )
 
-    print(f"\n{render.RULE}\n")
+    render.model_answer(answer, elapsed, crosscheck_result)
     return 0
 
 

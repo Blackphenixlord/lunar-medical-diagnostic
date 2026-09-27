@@ -11,7 +11,11 @@ TWO RULES FOR EVERY SCREEN IN HERE
 
 from __future__ import annotations
 
+import os
+import re
+import shutil
 import sys
+import textwrap
 from typing import Iterable
 
 from .engine import ConditionScore, Result, next_best_questions
@@ -20,6 +24,96 @@ from .models import URGENCY_TAG
 from .reason import Answer
 
 RULE = "=" * 66
+
+
+# --- readability: width, wrapping, colour ----------------------------------
+# The answer used to be one wall of text that ran off the side of the window.
+# Everything below exists so a tired crewmember can read it at a glance.
+
+MAX_WIDTH = 100     # past this, lines get hard to follow even on a wide screen
+
+
+def _enable_windows_colour() -> bool:
+    """Old Windows consoles print ANSI codes as garbage unless VT mode is on."""
+    if os.name != "nt":
+        return True
+    try:
+        import ctypes
+        kernel32 = ctypes.windll.kernel32
+        handle = kernel32.GetStdHandle(-11)          # STD_OUTPUT_HANDLE
+        mode = ctypes.c_uint32()
+        if not kernel32.GetConsoleMode(handle, ctypes.byref(mode)):
+            return False
+        return bool(kernel32.SetConsoleMode(handle, mode.value | 0x0004))
+    except Exception:
+        return False
+
+
+def _colour_wanted() -> bool:
+    if os.environ.get("NO_COLOR"):                   # https://no-color.org
+        return False
+    if not hasattr(sys.stdout, "isatty") or not sys.stdout.isatty():
+        return False                                 # piped or saved: plain text
+    return _enable_windows_colour()
+
+
+_COLOUR = _colour_wanted()
+
+_CODES = {
+    "bold": "1", "dim": "2", "red": "31", "green": "32", "yellow": "33",
+    "blue": "34", "magenta": "35", "cyan": "36", "white": "37",
+}
+
+URGENCY_STYLE = {
+    "emergency": ("EMERGENCY", ("bold", "red")),
+    "urgent":    ("URGENT",    ("bold", "yellow")),
+    "monitor":   ("MONITOR",   ("cyan",)),
+    "routine":   ("ROUTINE",   ("green",)),
+}
+
+
+def paint(text: str, *styles: str) -> str:
+    if not _COLOUR or not styles:
+        return text
+    codes = ";".join(_CODES[name] for name in styles)
+    return f"\033[{codes}m{text}\033[0m"
+
+
+def _width() -> int:
+    return max(50, min(shutil.get_terminal_size((MAX_WIDTH, 24)).columns - 1, MAX_WIDTH))
+
+
+def say(text: str, indent: int = 5, first: str | None = None) -> None:
+    """Print a paragraph wrapped to the window, with a hanging indent.
+
+    `first` replaces the indent on the first line only - used for bullets.
+    """
+    pad = " " * indent
+    lead = pad if first is None else first.rjust(indent)
+    wrapped = textwrap.fill(
+        " ".join(str(text).split()),
+        width=_width(),
+        initial_indent=lead,
+        subsequent_indent=pad,
+        break_long_words=False,
+        break_on_hyphens=False,
+    )
+    print(wrapped)
+
+
+def heading(title: str, note: str = "") -> None:
+    extra = f"  {paint(note, 'dim')}" if note else ""
+    print(f"\n  {paint(title, 'bold', 'cyan')}{extra}")
+
+
+def _strip_finding_id(question: str) -> str:
+    """reason.py tags each question with its finding id for the UI and tests.
+    A person reading the terminal does not need `[back_pain]`."""
+    return re.sub(r"\s*\[[a-z0-9_]+\]\s*$", "", question)
+
+
+def _thin_rule() -> str:
+    return paint("-" * _width(), "dim")
 
 DISCLAIMER = "decision support only, not a diagnosis"
 
@@ -53,70 +147,122 @@ def sources(entries: Iterable[dict], *, note: str = "") -> None:
 # --- the model's answer (`vitals ask`) -------------------------------------
 
 
-def model_answer(answer: Answer, elapsed_seconds: float) -> None:
-    """The main output of the whole system."""
-    banner(f"VITALS  -  {DISCLAIMER}",
-           f"[model: {answer.model}  |  {elapsed_seconds:.0f}s]")
+def model_answer(
+    answer: Answer,
+    elapsed_seconds: float,
+    crosscheck_result: tuple[str | None, str | None] | None = None,
+) -> None:
+    """The main output of the whole system.
+
+    Order is deliberate: the one-line verdict first, then detail. Someone
+    glancing at the screen should get "what is it, how bad, do I call the
+    ground" from the first four lines without reading anything else.
+
+    `crosscheck_result` is (engine_top_name, model_top_name) when `--crosscheck`
+    was asked for, so the agreement can sit in the summary instead of the end.
+    """
+    width = _width()
+    print()
+    print(paint("=" * width, "dim"))
+    print(f"  {paint('VITALS', 'bold')}  -  {DISCLAIMER}")
+    print(paint(f"  model {answer.model}  |  {elapsed_seconds:.0f}s  |  {answer.sensor_status}", "dim"))
+    print(paint("=" * width, "dim"))
 
     if answer.sensor_status == "no sensors connected":
-        print("\n  NOTE: no instruments attached. Everything below is from what the")
-        print("        crewmember said. No vital sign has been measured.")
+        say(paint("No instruments attached. Everything below comes from what the "
+                  "crewmember said - no vital sign has been measured.", "dim"), indent=2)
 
-    if answer.dropped:
-        print(f"\n  [dropped {len(answer.dropped)} condition(s) the model invented: "
-              f"{', '.join(answer.dropped)}]")
-
+    # --- the verdict ---------------------------------------------------------
     if answer.escalate:
-        print("\n  *** ESCALATE TO FLIGHT SURGEON ***")
-        print(f"      {answer.escalation_reason}")
+        print()
+        print("  " + paint(" ESCALATE TO FLIGHT SURGEON ", "bold", "red"))
+        if answer.escalation_reason:
+            say(answer.escalation_reason, indent=4)
 
     if not answer.differential:
         print(NOTHING_MATCHED)
         return
 
-    for position, candidate in enumerate(answer.differential, 1):
-        tag = URGENCY_TAG.get(candidate.urgency, "")
-        print(f"\n  {position}. {tag} {candidate.name}   [{candidate.confidence} confidence]")
-        if candidate.reasoning:
-            print(f"      {candidate.reasoning}")
-        for phrase in candidate.supporting:
-            print(f"        + {phrase}")
-        for phrase in candidate.against:
-            print(f"        - {phrase}")
-
     top = answer.differential[0]
-    print(f"\n  ---- Recommended next steps for: {top.name} ----")
-    for action in top.recommend:
-        print(f"    * {action}")
+    label, colours = URGENCY_STYLE.get(top.urgency, (top.urgency.upper(), ()))
+    print()
+    print(f"  {paint('MOST LIKELY', 'bold')}   {paint(top.name, 'bold')}")
+    status = f"{paint(label, *colours)}  |  {top.confidence} confidence"
+    status += "  |  " + ("escalate" if answer.escalate else "no escalation")
+    print(f"                {status}")
+    if crosscheck_result is not None:
+        engine_name, model_name = crosscheck_result
+        if engine_name is None:
+            check = paint("backup engine: too little to go on", "dim")
+        elif engine_name == model_name:
+            check = paint("backup engine agrees", "green")
+        else:
+            check = paint(f"backup engine DISAGREES - it says {engine_name}", "bold", "yellow")
+        print(f"                {check}")
+
+    if answer.dropped:
+        say(paint(f"[dropped {len(answer.dropped)} condition(s) the model made up: "
+                  f"{', '.join(answer.dropped)}]", "yellow"), indent=2)
+
+    # --- the differential ----------------------------------------------------
+    heading("WHAT IT COULD BE", "(most likely first)")
+    for position, candidate in enumerate(answer.differential, 1):
+        label, colours = URGENCY_STYLE.get(candidate.urgency, (candidate.urgency.upper(), ()))
+        print()
+        print(f"  {position}. {paint(candidate.name, 'bold')}   "
+              f"{paint(label, *colours)}  |  {candidate.confidence} confidence")
+        if candidate.reasoning:
+            say(candidate.reasoning, indent=5)
+        for phrase in candidate.supporting:
+            say(phrase, indent=7, first="  + ")
+        for phrase in candidate.against:
+            say(phrase, indent=7, first="  - ")
+
+    # --- what to do ----------------------------------------------------------
+    if top.recommend:
+        heading("WHAT TO DO", f"(for {top.name}, from the knowledge base)")
+        for action in top.recommend:
+            say(action, indent=7, first="  * ")
 
     if answer.next_questions:
-        print("\n  ---- Ask these next ----")
+        heading("ASK NEXT")
         for question in answer.next_questions:
-            print(f"    ? {question}")
+            say(_strip_finding_id(question), indent=7, first="  ? ")
 
     if answer.uncertainty:
-        print(f"\n  Least certain about: {answer.uncertainty}")
+        heading("LEAST SURE ABOUT")
+        say(answer.uncertainty, indent=5)
 
-    sources(top.sources, note=f" for {top.condition_id} (from the knowledge base, not the model)")
+    if crosscheck_result is not None:
+        engine_name, model_name = crosscheck_result
+        if engine_name is not None and engine_name != model_name:
+            heading("CROSS-CHECK")
+            say(f"The model says {model_name}; the backup scoring engine says "
+                f"{engine_name}. Worth a look: the engine only reads the findings "
+                f"the extractor caught, the model reads the whole sentence.", indent=5)
+
+    heading("SOURCES", "(from the knowledge base, not the model)")
+    for entry in top.sources:
+        say(entry["title"], indent=5)
+        print(paint(f"     {entry['url']}", "dim"))
+
+    print()
+    print(paint("=" * width, "dim"))
+    print()
 
 
 def crosscheck(model_top_id: str | None, engine_top_id: str | None) -> None:
-    """How the deterministic engine voted, next to the model.
-
-    They see different things - the engine only reads findings the extractor
-    caught, the model reads the whole sentence - so a disagreement is
-    information, not a bug.
-    """
-    print("\n  ---- cross-check: deterministic engine ----")
-
+    """Old standalone cross-check line. `vitals ask` now shows the cross-check
+    inside `model_answer`; kept for anything else that still calls it."""
+    heading("CROSS-CHECK")
     if engine_top_id is None:
-        print("    engine had too little to go on (it only sees extracted findings)")
+        say("backup engine had too little to go on (it only sees extracted findings)")
     elif engine_top_id == model_top_id:
-        print(f"    agrees: {engine_top_id}")
+        say(f"backup engine agrees: {engine_top_id}")
     else:
-        print(f"    DISAGREES: engine says {engine_top_id}, model says {model_top_id}")
-        print("    Worth a look. They see different things - the engine only reads")
-        print("    findings the extractor caught, the model reads your whole sentence.")
+        say(f"DISAGREES: engine says {engine_top_id}, model says {model_top_id}. "
+            "They see different things - the engine only reads findings the "
+            "extractor caught, the model reads the whole sentence.")
 
 
 def retrieval_trace(retrieved, observations: dict, sensor_status: str) -> None:
