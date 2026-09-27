@@ -372,3 +372,51 @@ def test_error_advice_matches_where_the_user_actually_is(kb, renal_setup):
     msg = str(remote.value)
     assert "docker compose" in msg
     assert "Start menu" not in msg
+
+
+# --- the engine backstop (added 26 Sep after the first full benchmark) --------
+
+def _ask_with_fake_reply(kb, monkeypatch, text, reply):
+    obs = KeywordExtractor().extract(text, kb)
+    fake_ollama(monkeypatch, reply)
+    return ask(kb, text, retrieve(kb, text, obs), observations=obs)
+
+
+def test_engine_backstop_escalates_when_the_model_misses_the_bends(kb, monkeypatch):
+    """Real failure from the 26 Sep benchmark: after an EVA, joint pain plus a
+    marbled rash is decompression sickness, and the model called it shoulder
+    strain without escalating. The engine reads the same findings and must
+    pull the alarm the model did not."""
+    text = ("just got back from the EVA an hour ago, my elbow has a deep ache "
+            "and there's a blotchy rash on my chest")
+    ans = _ask_with_fake_reply(kb, monkeypatch, text, {
+        "differential": [{"condition_id": "msk_shoulder_overuse", "confidence": "high",
+                          "reasoning": "overuse"}],
+        "escalate": False, "escalation_reason": "",
+        "next_findings": [], "uncertainty": "",
+    })
+    assert ans.escalate is True
+    assert "backup scoring engine" in ans.escalation_reason
+    assert "Decompression" in ans.escalation_reason
+
+
+def test_engine_backstop_stays_quiet_on_a_minor_complaint(kb, monkeypatch):
+    """The backstop must not turn every answer into an alarm."""
+    text = "my tooth is a bit sensitive to cold drinks, maybe a 3, no swelling"
+    ans = _ask_with_fake_reply(kb, monkeypatch, text, {
+        "differential": [{"condition_id": "dental_emergency", "confidence": "high",
+                          "reasoning": "sensitivity"}],
+        "escalate": False, "escalation_reason": "",
+        "next_findings": [], "uncertainty": "",
+    })
+    assert ans.escalate is False
+
+
+def test_engine_backstop_ignores_a_complaint_with_nothing_extracted(kb, monkeypatch):
+    """With nothing recognised the engine only has base rates. That is not a
+    reason to alarm, and it is not a second opinion."""
+    ans = _ask_with_fake_reply(kb, monkeypatch, "blorp zzz qwerty", {
+        "differential": [], "escalate": False, "escalation_reason": "",
+        "next_findings": [], "uncertainty": "",
+    })
+    assert ans.escalate is False

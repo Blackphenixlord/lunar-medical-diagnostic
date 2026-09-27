@@ -3,8 +3,8 @@
 Updated 26 Sep 2026. Everything marked **verified** below was actually run,
 not assumed.
 
-14 conditions, 72 findings. `pytest tests -q` collects **111 tests and all
-pass** (104 test functions; the demo-case test runs once per file in `cases/`).
+14 conditions, 72 findings. `pytest tests -q` collects **131 tests and all
+pass** (the demo-case and phrasing tests run once per case, which is why the count is higher than the number of test functions).
 
 ## Architecture (current)
 
@@ -30,7 +30,7 @@ complaint -> extract.py (findings) -> retrieval.py (select KB conditions)
 ```bash
 pip install -e .                          # once; after this no PYTHONPATH needed
 python -m vitals validate                 # KB VALID, 14 conditions, 72 findings
-pytest tests -q                           # 111 passed
+pytest tests -q                           # 131 passed
 python -m vitals ask "..." --crosscheck
 ```
 

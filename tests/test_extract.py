@@ -130,3 +130,39 @@ def test_ollama_output_is_scrubbed_against_the_vocabulary(kb, monkeypatch):
     obs = ex.extract("whatever", kb)
     assert obs == {"headache": True, "fever": 38.4}
     assert all(k in kb.findings for k in obs)
+
+
+# --- phrasings added 26 Sep ---------------------------------------------------
+# DCS, dental and wounds had NO phrasebook entries at all, so the extractor
+# found nothing in "came in off the EVA" or "tooth has been killing me". These
+# use everyday wording on purpose - not the benchmark sentences.
+
+@pytest.mark.parametrize("text, finding, expected", [
+    ("back from the spacewalk and my knee aches", "recent_decompression", True),
+    ("post-EVA and feeling off", "recent_decompression", True),
+    ("the EVA is scheduled for next week", "recent_decompression", None),
+    ("weird marbled rash on my shoulder", "skin_mottling", True),
+    ("I feel confused and my balance is off", "confusion", True),
+    ("I feel confused and my balance is off", "balance_impaired", True),
+    ("my molar hurts when I chew", "tooth_pain", True),
+    ("my molar hurts when I chew", "pain_on_biting", True),
+    ("my gum is swollen on the left", "jaw_or_face_swelling", True),
+    ("a filling fell out yesterday", "lost_filling_or_crown", True),
+    ("got a deep cut on my palm", "open_wound", True),
+    ("it won't stop bleeding even with pressure", "bleeding_uncontrolled", True),
+    ("there's blood when I pee", "hematuria", True),
+    ("I get out of breath climbing the node", "shortness_of_breath", True),
+    ("my arm feels weak", "numbness_or_weakness", True),
+])
+def test_everyday_phrasings(kb, ex, text, finding, expected):
+    assert ex.extract(text, kb).get(finding) is expected
+
+
+def test_spoken_pain_scores_attach_to_the_pain(kb, ex):
+    assert ex.extract("my tooth is killing me, maybe a 9", kb).get("tooth_pain") == 9.0
+    assert ex.extract("my back hurts, about a 6 today", kb).get("back_pain") == 6.0
+
+
+def test_a_duration_is_not_a_pain_score(kb, ex):
+    obs = ex.extract("my back hurts, it's been a 2 hour thing", kb)
+    assert obs.get("back_pain") is True

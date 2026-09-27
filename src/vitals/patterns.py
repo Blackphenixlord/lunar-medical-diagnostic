@@ -46,6 +46,7 @@ SYMPTOM_PATTERNS: dict[str, list[str]] = {
     "pain_colicky":              [r"comes? (and goes|in waves)", r"\bwaves\b", r"colicky"],
     "pain_radiates_groin":       [r"(down|toward|to).{0,15}groin", r"radiat\w+.{0,20}groin"],
     "hematuria":                 [r"blood in (my )?(urine|pee)",
+                                  r"blood when i (pee|urinate)", r"peeing blood",
                                   r"(urine|pee).{0,20}(red|pink|brown)", r"hematuria"],
     "dysuria":                   [r"burns? (when|to) (i )?(pee|urinat)",
                                   r"hurts to (pee|urinate)", r"dysuria"],
@@ -62,20 +63,23 @@ SYMPTOM_PATTERNS: dict[str, list[str]] = {
     "cough":                     [r"\bcough"],
     "purulent_discharge":        [r"(yellow|green).{0,20}(mucus|discharge|snot)", r"purulent"],
     "shortness_of_breath":       [r"short(ness)? of breath", r"can'?t catch my breath",
-                                  r"hard to breathe", r"winded"],
+                                  r"hard to breathe", r"winded", r"out of breath",
+                                  r"breathless"],
     "chest_pain":                [r"chest (pain|hurts|tight)", r"pain in my chest"],
     "neck_swelling":             [r"neck.{0,20}(swollen|swelling|bigger)", r"swelling in my neck"],
     "limb_swelling_unilateral":  [r"one (arm|leg).{0,20}(swollen|bigger)",
                                   r"(arm|leg).{0,15}swollen.{0,20}other"],
     "presyncope":                [r"light ?headed", r"about to (pass out|faint)",
                                   r"nearly fainted", r"dizzy when i stand"],
-    "shoulder_pain":             [r"shoulder (pain|hurts|sore)", r"pain in my shoulder"],
+    "shoulder_pain":             [r"shoulder (pain|hurts|sore)", r"pain in my shoulder",
+                                  r"shoulder.{0,25}(ache|aching|hurt|sore|pain)"],
     "back_pain":                 [r"back (pain|hurts|ache|sore)", r"my back is killing"],
     "pain_after_eva_training":   [r"(after|during).{0,20}(eva|spacewalk|suit)", r"suited (work|run)"],
     "pain_after_exercise":       [r"(after|during).{0,20}(ared|exercise|workout|lifting|resistive)"],
     "range_of_motion_limited":   [r"can'?t (lift|raise|move) (it|my)", r"range of motion", r"stiff"],
     "numbness_or_weakness":      [r"numb", r"tingl", r"pins and needles",
-                                  r"weak(ness)? in my (arm|leg|hand)"],
+                                  r"weak(ness)? in my (arm|leg|hand)",
+                                  r"(arm|leg|hand)s? (feels?|is|are|went|going) weak"],
     "height_increase":           [r"(taller|grown|gained height)", r"height.{0,15}(increase|up)"],
     "difficulty_falling_asleep": [r"(can'?t|trouble|hard to|struggling to) (fall|get to) ?asleep",
                                   r"lying awake"],
@@ -89,6 +93,64 @@ SYMPTOM_PATTERNS: dict[str, list[str]] = {
     "malaise":                   [r"run ?down", r"generally unwell", r"feel awful", r"lousy"],
     "recent_gravity_transition": [r"(just )?(landed|undock|launch|re-?entry)",
                                   r"(since|after) (landing|touchdown)"],
+    # --- added 26 Sep: whole sections that had NO phrasings at all ------------
+    # The first benchmark run on Joshua's PC showed the extractor finding
+    # nothing in "came in off the EVA ... blotchy marbled rash" or "tooth has
+    # been killing me". DCS, dental and wounds were added to the knowledge base
+    # after this file was written and never got a phrasebook.
+
+    # decompression / EVA
+    "recent_decompression":      [r"(off|after|back from|finished|since) (the |my |an? )?(eva|spacewalk)",
+                                  r"(eva|spacewalk).{0,25}(today|this morning|earlier|hours? ago|yesterday)",
+                                  r"\bpost[- ]?(eva|spacewalk)", r"\bairlock", r"\bdepress(uriz|ur)", r"(just|recently) (did|came in from) (an? |the )?(eva|spacewalk)"],
+    "prebreathe_shortened":      [r"pre-?breathe.{0,30}(short|cut|skip|rush|early)",
+                                  r"(short|cut|skip|rush)\w*.{0,20}pre-?breathe"],
+    "relief_on_repressurization": [r"(better|eased|relief|went away).{0,30}(repress|pressure (went|was) (up|raised))"],
+    "joint_pain":                [r"\bjoints?\b.{0,25}(ache|aching|hurt|pain|sore)",
+                                  r"(ache|pain|hurt)\w*.{0,15}in (my|the) (elbow|knee|wrist|joint)",
+                                  r"(elbow|knee|wrist).{0,20}(ache|aching|hurt|pain)",
+                                  r"deep (boring |dull |aching )?(ache|pain)"],
+    "skin_mottling":             [r"(blotch|marbl|mottl)\w*", r"cutis marmorata",
+                                  r"(purple|red).{0,15}(patch|rash).{0,25}(skin|arm|chest)"],
+    "confusion":                 [r"\bconfus", r"disorient", r"don'?t know where i am",
+                                  r"can'?t think straight"],
+    "balance_impaired":          [r"(balance|coordination).{0,20}(off|bad|gone|problem|trouble)",
+                                  r"\bunsteady", r"keep (bumping|stumbling|falling)", r"clumsy"],
+
+    # dental
+    "tooth_pain":                [r"\btooth", r"\bteeth", r"\bmolar", r"toothache"],
+    "pain_on_cold":              [r"(cold|hot) (drink|water|food|air).{0,25}(hurt|pain|zing|shoot)",
+                                  r"(hurt|pain|zing|shoot)\w*.{0,20}(cold|hot) (drink|water|food)",
+                                  r"sensitive to (cold|hot)"],
+    "pain_on_biting":            [r"(bit|bite|biting|chew|chewing).{0,25}(hurt|pain|kill)",
+                                  r"hurts? (to|when i) (bite|chew)"],
+    "jaw_or_face_swelling":      [r"(jaw|gum|cheek|face).{0,20}(swollen|swelling|puffed)",
+                                  r"swell\w*.{0,20}(jaw|gum|cheek)"],
+    "lost_filling_or_crown":     [r"(lost|fell out|came out|broke|cracked|chipped).{0,20}(filling|crown|tooth)",
+                                  r"(filling|crown).{0,20}(fell|came|popped) out"],
+    "pain_wakes_from_sleep":     [r"(wakes?|waking|woke) me (up)?", r"keeps me up at night",
+                                  r"can'?t sleep (because|from) the pain"],
+
+    # wounds
+    "open_wound":                [r"\bcut (my|myself|it|open|across|on|in)", r"\b(gash|laceration)",
+                                  r"\b(deep|bad|big|nasty|long) cut",
+                                  r"sliced", r"\bwound\b", r"\bi cut\b"],
+    "bleeding_uncontrolled":     [r"(won'?t|doesn'?t|isn'?t|not) stop(ping)? bleeding",
+                                  r"bleeding.{0,20}(won'?t|doesn'?t|not) stop",
+                                  r"(still|keeps) bleeding.{0,20}(pressure|despite)"],
+    "wound_gaping":              [r"(gap|gaping|spread(s|ing)? open|won'?t (stay|close) (shut|closed))",
+                                  r"edges.{0,20}(apart|open|won'?t close)", r"(needs|might need) stitches"],
+    "foreign_body":              [r"(something|metal|glass|debris|splinter|shard).{0,20}(in|stuck in) (it|the (cut|wound))",
+                                  r"foreign (body|object)"],
+    "wound_spreading_redness":   [r"(red|redness).{0,20}(spread|streak|getting bigger)",
+                                  r"\bpus\b", r"(warm|hot) (to the touch|around the cut)",
+                                  r"oozing"],
+    "tetanus_status_unknown":    [r"(don'?t know|not sure|can'?t remember).{0,25}tetanus",
+                                  r"tetanus.{0,25}(out of date|expired|years ago)"],
+
+    # general
+    "fatigue":                   [r"\btired", r"exhausted", r"\bfatigue", r"no energy", r"wiped out"],
+
     "purulent_discharge_alt":    [],
 }
 
@@ -106,10 +168,15 @@ NUMERIC_PATTERNS: dict[str, str] = {
 }
 
 # "8 out of 10", "8/10". Attached to whichever pain finding is already present.
-PAIN_SCALE_PATTERN = r"(\d{1,2})\s*(?:out of|/)\s*10"
+PAIN_SCALE_PATTERN = (
+    r"(\d{1,2})\s*(?:out of|/)\s*10"
+    r"|\b(?:a|an|maybe a|maybe an|about a|about an|like a|like an|around a|around an)\s+"
+    r"(10|[0-9])\b(?!\s*(?:hours?|hrs?|days?|mins?|minutes?|am|pm|times?|diopt|d\b|[:./]\d))"
+)
 
 # Findings a bare 0-10 score is allowed to attach to, best candidate first.
-PAIN_SCALE_TARGETS = ("flank_pain", "back_pain", "shoulder_pain", "nausea", "fatigue")
+PAIN_SCALE_TARGETS = ("flank_pain", "back_pain", "tooth_pain", "joint_pain",
+                      "shoulder_pain", "nausea", "fatigue")
 
 
 # --- negation --------------------------------------------------------------

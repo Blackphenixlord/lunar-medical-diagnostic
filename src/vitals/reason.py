@@ -40,6 +40,7 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 
 from . import sensors
+from .engine import diagnose
 from .knowledge_base import KnowledgeBase
 from .ollama_client import (
     DEFAULT_MODEL,
@@ -186,6 +187,8 @@ def ask(
 
     differential, dropped = _validated_differential(reply, knowledge_base, allowed_ids)
     escalate, escalation_reason = _escalation(reply, differential)
+    if not escalate:
+        escalate, escalation_reason = _engine_backstop(knowledge_base, known, escalation_reason)
 
     return Answer(
         differential=differential,
@@ -353,6 +356,37 @@ def _escalation(reply: dict, differential: list[Candidate]) -> tuple[bool, str]:
             )
 
     return False, reason
+
+
+def _engine_backstop(
+    knowledge_base: KnowledgeBase,
+    known: dict[str, Any],
+    reason: str,
+) -> tuple[bool, str]:
+    """Last line of defence: if the deterministic engine escalates, so do we.
+
+    Added after the first full benchmark on Joshua's PC (26 Sep): the model
+    missed 3 escalations - a post-EVA bends case it called shoulder strain, a
+    nervously-worded kidney stone it called back pain, and a dental abscess it
+    named correctly but did not escalate. The engine, reading the same
+    findings, escalated two of the three. An extra alarm costs a call to the
+    ground; a missed one can cost the crewmember.
+
+    Only runs when something was actually extracted - with nothing known the
+    engine falls back to base rates, which is not evidence of anything.
+    """
+    if not known:
+        return False, reason
+
+    result = diagnose(knowledge_base, known)
+    if not result.escalate:
+        return False, reason
+
+    return True, (
+        "The backup scoring engine flagged this: "
+        + "; ".join(result.escalation_reasons)
+        + ". Escalation added automatically - the model did not escalate."
+    )
 
 
 def _next_questions(

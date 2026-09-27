@@ -219,7 +219,7 @@ class KeywordExtractor:
         if not match:
             return
 
-        severity = float(match.group(1))
+        severity = float(next(group for group in match.groups() if group))
         for finding_id in PAIN_SCALE_TARGETS:
             if observations.get(finding_id) is True:
                 observations[finding_id] = severity

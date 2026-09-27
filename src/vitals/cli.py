@@ -77,7 +77,10 @@ def cmd_ask(args) -> int:
 
     crosscheck_result = None
     if args.crosscheck:
-        engine_top = diagnose(knowledge_base, observations).top
+        # With nothing extracted the engine only has base rates - that is not
+        # a second opinion, so report "too little to go on" instead.
+        found_anything = any(value is not None for value in observations.values())
+        engine_top = diagnose(knowledge_base, observations).top if found_anything else None
         crosscheck_result = (
             engine_top.name if engine_top else None,
             answer.top.name if answer.top else None,

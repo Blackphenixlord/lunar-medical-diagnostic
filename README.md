@@ -61,7 +61,7 @@ python -m vitals bench --category mimic
 # supporting commands
 python -m vitals validate                 # check the knowledge base
 python -m vitals explain sans             # show a condition and its sources
-pytest tests -q                        # 111 tests
+pytest tests -q                        # 131 tests
 ```
 
 Skipped the `pip install -e` step? Then `python -m vitals` cannot find the
@@ -307,7 +307,7 @@ Dockerfile / docker-compose.yml    one-command run
 docker/ollama.Dockerfile           bakes the language model into its image
 prompts/complaints.yaml   33 test complaints, one per condition plus mimics
 cases/         saved demo cases with expected answers — these are regression tests
-tests/         111 tests
+tests/         131 tests
 docs/          knowledge base format, research notes
 ```
 
@@ -324,6 +324,6 @@ docs/          knowledge base format, research notes
 
 ## Status
 
-14 conditions · 72 findings · 111 tests passing · 8 demo cases passing.
+14 conditions · 72 findings · 131 tests passing · 8 demo cases passing.
 Ollama is the reasoner; the KB grounds it; sensors are stubbed, not faked.
 Model baked into the Docker image, so a demo never waits on a download.
