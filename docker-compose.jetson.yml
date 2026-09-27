@@ -18,25 +18,33 @@
 #      will not run on it. `docker compose build` on the Jetson itself is the
 #      simplest correct answer.
 #
-# WHICH MODEL
-#   llama3.2 (3B, the default) fits comfortably in Orin Nano memory alongside
-#   the OS and the UI. Tight on memory: llama3.2:1b. Orin NX or better:
-#   llama3.1:8b reasons noticeably better on the harder complaints.
-#   Set it ONCE, with VITALS_OLLAMA_MODEL - docker-compose.yml feeds that one
-#   variable to both the model bake and the app:
+# WHICH MODEL (the school's board is an Orin Nano Developer Kit, 8GB)
+#   Use llama3.2 (3B, the default). It fits in 8GB alongside the OS and the UI.
+#   llama3.1:8b scored better on the benchmark (85% vs 73% named correctly) but
+#   is tight in 8GB shared memory - try it only after the 3B works, and watch for
+#   ollama silently falling back to the CPU. Missed escalations were 0 on both,
+#   thanks to the engine backstop. See docs/bench/.
 #
-#   VITALS_OLLAMA_MODEL=llama3.2:1b docker compose -f docker-compose.yml -f docker-compose.jetson.yml build
+# WHICH OLLAMA IMAGE - UNTESTED UNTIL SOMEONE RUNS IT ON THE BOARD
+#   NVIDIA's Jetson AI Lab guide runs ollama from its Jetson-built image with
+#   the nvidia runtime, not the stock ollama/ollama image:
+#   https://www.jetson-ai-lab.com/tutorials/ollama/
+#   The tag must match the board's JetPack / L4T version. Check it ON the
+#   Jetson with:   cat /etc/nv_tegra_release      (R36 = JetPack 6, R35 = JetPack 5)
+#   and pick the matching tag from the guide. Override without editing this file:
+#
+#   VITALS_JETSON_OLLAMA_IMAGE=dustynv/ollama:<tag> docker compose -f docker-compose.yml -f docker-compose.jetson.yml build
+#
+# Check the GPU is really used after `up`:   docker compose logs ollama
+# (look for the GPU / CUDA being detected, not "no compatible GPUs").
 
 services:
 
   ollama:
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+    build:
+      args:
+        OLLAMA_IMAGE: ${VITALS_JETSON_OLLAMA_IMAGE:-dustynv/ollama:r36.2.0}
+    runtime: nvidia
     environment:
       # Keep the model resident in GPU memory. Reloading it is the slow part,
       # and a demo where the second question takes 40 seconds looks broken.

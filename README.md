@@ -183,11 +183,18 @@ docker compose -f docker-compose.yml -f docker-compose.jetson.yml build
 docker compose -f docker-compose.yml -f docker-compose.jetson.yml up
 ```
 
-The overlay hands the GPU to ollama and sets `OLLAMA_KEEP_ALIVE=24h` so the
+The overlay builds ollama on NVIDIA's Jetson image (`dustynv/ollama`, per
+NVIDIA's [Jetson AI Lab guide](https://www.jetson-ai-lab.com/tutorials/ollama/)) with
+the nvidia runtime - the stock image tends to land on the CPU - and sets
+`OLLAMA_KEEP_ALIVE=24h` so the
 model stays resident — reloading it is the slow part, and a demo where the
 second question takes 40 seconds looks broken. It needs the NVIDIA Container
 Toolkit on the host, which is part of the *"Flash Ubuntu on the Jetson"* board
-item, not something Docker installs.
+item, not something Docker installs. The image tag must match the board's JetPack
+version (`cat /etc/nv_tegra_release` on the Jetson); override it with
+`VITALS_JETSON_OLLAMA_IMAGE=dustynv/ollama:<tag>`. **Not yet run on the real board.**
+
+The school's board is an **Orin Nano Developer Kit, 8GB**: use `llama3.2` (3B).
 
 `llama3.2` is the 3B model and fits comfortably in Orin Nano memory. Orin NX
 or better? `llama3.1:8b` reasons noticeably better on the harder complaints.

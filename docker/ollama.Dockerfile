@@ -18,12 +18,24 @@
 #   A Jetson is arm64. An image built on an x86 laptop will not run on it.
 #   Build this ON the Jetson, or use `docker buildx --platform linux/arm64`.
 
-FROM ollama/ollama:latest
+# Which ollama image to build on. The stock image is right for a PC or laptop.
+# On a Jetson it is NOT: NVIDIA's own Jetson guide uses its Jetson-built image
+# (jetson-containers, `dustynv/ollama`) with the nvidia runtime, and the stock
+# image tends to end up on the CPU. docker-compose.jetson.yml overrides this.
+ARG OLLAMA_IMAGE=ollama/ollama:latest
+FROM ${OLLAMA_IMAGE}
 
-# Override to bake a different model:  docker compose build --build-arg MODEL=llama3.2:1b
+# Pick the model with VITALS_OLLAMA_MODEL in docker-compose.yml, not here -
+# compose passes the same value to this bake AND to the app.
 ARG MODEL=llama3.2
 
-ENV VITALS_BAKED_MODEL=${MODEL}
+# Pin where models live and how the server listens, so the baked model is found
+# whichever base image we built on. The stock image already uses these values;
+# the Jetson image may default to a different model folder, which would make
+# the model we bake invisible at runtime.
+ENV VITALS_BAKED_MODEL=${MODEL} \
+    OLLAMA_MODELS=/root/.ollama/models \
+    OLLAMA_HOST=0.0.0.0:11434
 
 # `ollama pull` needs a running server, and there is none during a build. So we
 # start one, wait for it, pull, and stop it again - all inside a single layer,
@@ -40,4 +52,7 @@ RUN set -eux; \
     kill "${server_pid}"; \
     wait "${server_pid}" 2>/dev/null || true
 
-# ollama/ollama already sets the right entrypoint and CMD; we only added a model.
+# Set the start command explicitly. The stock image already does exactly this,
+# but a different base image might start something else.
+ENTRYPOINT ["ollama"]
+CMD ["serve"]
