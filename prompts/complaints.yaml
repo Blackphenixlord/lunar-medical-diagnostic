@@ -200,8 +200,9 @@ prompts:
     escalate: false
     why: >
       Was a known gap until 23 Aug - the correct answer used to be "nothing
-      fits". Now a rule exists. NASA's IMM puts dental caries at 0.39 events per
-      person-year, which makes this one of the likelier things in the whole KB.
+      fits". Now a rule exists. Rare (NASA IMM 2016: abscess ~0.008 per
+      person-year) but a dental abscess is the condition NASA rates most likely
+      to force an ISS evacuation, so it must be recognised.
 
   - id: none_psych
     category: nothing_fits

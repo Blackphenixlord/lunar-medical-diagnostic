@@ -138,10 +138,11 @@ the people.** No other rule in the KB is diagnosed by asking about somebody else
   the CNS and can kill. Prevention is denitrogenation via 3–5 hour prebreathe. Treatment is
   repressurization to a minimum of 16.4 psia. **NASA has never had a Type II event in
   spaceflight** — a statement about how good the prevention is, not how safe the physiology is.
-- **Dental emergency** — `kb/conditions/dental_emergency.yaml`. NASA's Integrated Medical
-  Model predicts, per person-year: caries **0.39**, abscess 0.023, exposed pulp 0.020,
-  crown replacement 0.005, avulsion 0.003. Caries at 0.39 makes this one of the likeliest
-  events in the whole knowledge base. No documented US in-flight case, but a cosmonaut on
+- **Dental emergency** — `kb/conditions/dental_emergency.yaml`. NASA's current Integrated
+  Medical Model baselines (2016) put caries at **0.0094** and abscess at **0.0082** per
+  person-year. A 2012 NASA review quoted older IMM figures (caries 0.39) — superseded; see
+  `DATA_incidence_sources.md`. Rare, but NASA rates abscess the likeliest cause of an ISS
+  medical evacuation. No documented US in-flight case, but a cosmonaut on
   Salyut 6 in 1978 had incapacitating dental pain for the last two weeks of a 96-day flight.
   Crew training tops out at pulling a tooth.
 - **Laceration / open wound** — `kb/conditions/wound_laceration.yaml`. Two things change in

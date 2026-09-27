@@ -14,10 +14,11 @@ description: >
 
 microgravity_note: >
   Launch vibration is itself a cause - cosmonauts have reported fillings and
-  crowns shaken loose. NASA's Integrated Medical Model predicts, per person-year:
-  dental caries 0.39, abscess 0.023, exposed pulp 0.020, crown replacement
-  0.005, avulsion 0.003. Caries at 0.39 per person-year makes this one of the
-  likelier things on this whole knowledge base to actually happen. There is no
+  crowns shaken loose. NASA's current Integrated Medical Model baselines (2016)
+  put dental caries at 0.0094 and dental abscess at 0.0082 events per
+  person-year. (A 2012 NASA review quoted older IMM figures, caries 0.39 - those
+  are superseded; see docs/DATA_incidence_sources.md.) Rare, but per NASA a
+  dental abscess is the condition most likely to force an ISS evacuation. There is no
   documented in-flight dental emergency in a US astronaut, but a cosmonaut on
   Salyut 6 in 1978 suffered incapacitating dental pain through the last two
   weeks of a 96-day flight - which is the real risk here: not death, but a
@@ -72,7 +73,10 @@ differential: [tension_headache_co2, sinonasal_congestion, urti]
 sources:
   - title: "Review of Spaceflight Dental Emergencies - NASA/TM-2012-217368"
     url: "https://humanresearchroadmap.nasa.gov/gaps/closureDocumentation/2-Menon-A_TM-2012-217368.pdf"
-    note: IMM per-person-year rates, Salyut 6 1978 case, cosmonaut lost fillings from launch vibration.
+    note: Older (2012) IMM per-person-year rates, Salyut 6 1978 case, cosmonaut lost fillings from launch vibration. Abscess as likeliest evacuation cause.
+  - title: "NASA Dental Caries and Dental Abscess CliFF Baselines (IMM, 2016)"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/dental-abscess-cliff.pdf"
+    note: Current IMM incidence - abscess 0.0082, caries 0.0094 per person-year. Supersedes the 2012 figures.
   - title: "Oral Health in Zero Gravity: Orofacial Effects and Countermeasures in Spaceflight - PMC"
     url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC10728690/"
   - title: "Medical Operations and Clinical Care - NASA"
