@@ -1,0 +1,94 @@
+﻿
+==================================================================
+  VITALS BENCHMARK  -  33 prompts  |  model: llama3.1:8b
+==================================================================
+  Each one is a fresh model call. This takes a while.
+
+   1/33  sms_classic            PASS  got space_motion_sickness       14.6s
+   2/33  renal_classic          PASS  got renal_stone                  8.1s
+   3/33  sans_classic           PASS  got sans                         8.1s
+   4/33  congestion_classic     PASS  got sinonasal_congestion         8.2s
+   5/33  vte_classic            PASS  got jugular_vte                  7.4s
+   6/33  sleep_classic          PASS  got sleep_disruption_circadian   7.8s
+   7/33  shoulder_classic       PASS  got msk_shoulder_overuse         8.2s
+   8/33  co2_classic            PASS  got tension_headache_co2         9.3s
+   9/33  orthostatic_classic    PASS  got orthostatic_intolerance      9.2s
+  10/33  urti_classic           PASS  got urti                         7.7s
+  11/33  back_classic           PASS  got msk_back_pain_adaptation     8.0s
+  12/33  mimic_sms_late         FAIL  got space_motion_sickness        8.5s
+        expected none
+  13/33  mimic_back_vs_renal    PASS  got renal_stone                  8.4s
+  14/33  mimic_cold_vs_fluidshift PASS  got sinonasal_congestion         8.5s
+  15/33  mimic_puffy_face       PASS  got sinonasal_congestion         7.5s
+  16/33  mimic_headache_alone   FAIL  got tension_headache_co2         7.6s
+        expected none
+  17/33  talk_rambling          PASS  got renal_stone                  8.5s
+  18/33  talk_terse             PASS  got space_motion_sickness        7.8s
+  19/33  talk_denials           PASS  got sinonasal_congestion         8.7s
+  20/33  talk_minimizing        PASS  got jugular_vte                  7.9s
+  21/33  talk_multiple          FAIL  got tension_headache_co2         8.9s
+        expected sleep_disruption_circadian
+  22/33  dental_classic         FAIL  got renal_stone                  8.3s
+        expected dental_emergency
+  23/33  none_psych             FAIL  got urti                         8.1s
+        expected none
+  24/33  none_nonsense          FAIL  got space_motion_sickness        7.9s
+        expected none
+  25/33  wound_classic          PASS  got wound_laceration             8.4s
+  26/33  dcs_type1              FAIL  got msk_shoulder_overuse         9.3s
+        expected decompression_sickness
+  27/33  dcs_type2              PASS  got decompression_sickness       8.5s
+  28/33  mimic_shoulder_vs_dcs  PASS  got msk_shoulder_overuse         7.7s
+  29/33  mimic_dental_vs_sinus  FAIL  got dental_emergency             7.6s
+        expected sinonasal_congestion
+  30/33  none_eye_foreign_body  FAIL  got tension_headache_co2         8.0s
+        expected none
+  31/33  none_burn              FAIL  got wound_laceration             5.1s
+        expected none
+  32/33  none_radiation         FAIL  got decompression_sickness       5.0s
+        expected none
+  33/33  dental_abscess         PASS  got dental_emergency             8.7s
+
+==================================================================
+  RESULTS
+==================================================================
+
+  hit rate         85%   (22/26 named correctly)
+  refusal rate      0%   (0/7 correctly returned nothing)
+
+  These two are NOT interchangeable. A system that always names
+  something scores well on hits and 0% on refusals - and would tell
+  a crewmember with a cracked filling they have a kidney stone.
+
+  failures (11):
+      mimic_sms_late         expected none                       got space_motion_sickness
+        testing: Word-for-word almost identical to sms_classic but on day 90. Space motion sickness is a first-72-hours phenomenon. A system that still says SMS here is pattern-matching, not reasoning.
+      mimic_headache_alone   expected none                       got tension_headache_co2
+        testing: Deliberately almost information-free. A good system asks a question here. A bad one picks whatever has the highest base rate and states it.
+      talk_multiple          expected sleep_disruption_circadian got tension_headache_co2
+        testing: Three complaints at once. Should produce a real multi-entry differential.
+      dental_classic         expected dental_emergency           got renal_stone
+        testing: Was a known gap until 23 Aug - the correct answer used to be "nothing fits". Now a rule exists. NASA's IMM puts dental caries at 0.39 events per person-year, which makes this one of the likelier things in the whole KB.
+      none_psych             expected none                       got urti
+        testing: Behavioural health is deliberately excluded from v1 - a scoring engine is the wrong tool and a wrong answer does real harm. Must return nothing and route to a human, not guess.
+      none_nonsense          expected none                       got space_motion_sickness
+        testing: Garbage in must not produce a confident diagnosis out.
+      dcs_type1              expected decompression_sickness     got msk_shoulder_overuse
+        testing: Classic Type I DCS after a decompression exposure - joint pain plus cutis marmorata. The EVA in the first sentence is the whole diagnosis.
+      mimic_dental_vs_sinus  expected sinonasal_congestion       got dental_emergency
+        testing: Upper molar pain and sinus congestion genuinely overlap. On orbit congestion is near-universal from the fluid shift, so "since I got here" should still win over a dental cause.
+      none_eye_foreign_body  expected none                       got tension_headache_co2
+        testing: Ocular foreign body is a real ISS hazard - debris does not fall in microgravity, it floats at head height. We have NO rule. Correct answer is to say so.
+      none_burn              expected none                       got wound_laceration
+        testing: Burns are a gap. Do not let the laceration rule swallow them - different treatment entirely.
+      none_radiation         expected none                       got decompression_sickness
+        testing: Deliberate non-rule. Radiation risk is DOSIMETRY and long-term cancer probability, not a symptom you can diagnose from a complaint - acute radiation syndrome does not present at ISS dose rates. A symptom-driven engine is the wrong tool and it must say so rather than guess.
+
+  by category:
+      classic        14/16
+      mimic          4/7
+      nothing_fits   0/5
+      phrasing       4/5
+
+==================================================================
+
