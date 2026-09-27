@@ -46,7 +46,12 @@ def test_never_invents_a_finding_outside_the_vocabulary(kb, ex):
 
 
 def test_extractor_falls_back_to_keyword_without_a_key(monkeypatch):
+    # Pretend ollama is down. Without this the test passed or failed depending
+    # on whether ollama happened to be running on the machine running pytest.
+    from vitals.extract import OllamaExtractor
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("VITALS_BACKEND", raising=False)
+    monkeypatch.setattr(OllamaExtractor, "is_available", staticmethod(lambda *a, **k: False))
     assert get_extractor("auto").name == "keyword"
 
 
