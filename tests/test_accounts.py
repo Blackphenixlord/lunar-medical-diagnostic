@@ -151,3 +151,10 @@ def test_bad_role_or_pin_is_refused(tmp_path, role, pin):
 def test_the_demo_accounts_file_loads_and_covers_every_role():
     loaded = load_accounts(accounts.EXAMPLE_ACCOUNTS_FILE)
     assert {a.role for a in loaded} == set(accounts.ROLES)
+
+
+def test_docker_image_ships_the_demo_accounts():
+    """Found 27 Sep: the Dockerfile copied src/kb/prompts but not the accounts
+    file, so the server would refuse to start inside Docker and on the Jetson."""
+    dockerfile = (accounts.REPO_ROOT / "Dockerfile").read_text(encoding="utf-8")
+    assert "COPY accounts.example.json" in dockerfile

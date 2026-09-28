@@ -26,6 +26,9 @@ COPY src/    ./src/
 COPY kb/     ./kb/
 COPY cases/  ./cases/
 COPY prompts/ ./prompts/
+# Demo PIN accounts. Without an accounts file the server refuses to start.
+# For real accounts, mount one and point VITALS_ACCOUNTS at it.
+COPY accounts.example.json ./
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
