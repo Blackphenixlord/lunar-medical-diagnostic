@@ -1,0 +1,39 @@
+{
+  "_note": [
+    "DEMO ACCOUNTS ONLY. Used when accounts.json does not exist.",
+    "Demo PINs: astronaut 1111, ground crew 2222, doctor 3333.",
+    "For real use: python -m vitals add-account (writes accounts.json, which git ignores).",
+    "Profiles here are made up for the demo. They are not real crew data."
+  ],
+  "accounts": [
+    {
+      "id": "astro-demo",
+      "name": "Demo Astronaut",
+      "role": "astronaut",
+      "pin_hash": "pbkdf2$100000$19e9f07bf286a31d59cb84e081077e64$0b37bc0dac2c5e486856848688bccddce711eda94889873ab524a86c09ff1259",
+      "profile": {
+        "Crew ID": "CM-2",
+        "Age": "41",
+        "Sex": "Male",
+        "Height": "178 cm",
+        "Weight (last logged)": "79 kg",
+        "Allergies": "None recorded",
+        "Medications": "None recorded"
+      }
+    },
+    {
+      "id": "ground-demo",
+      "name": "Demo Ground Crew",
+      "role": "ground",
+      "pin_hash": "pbkdf2$100000$4dc9a83612d1dbcbd038033721d54aae$9244f11cd6eabd058e26593901b89f1f2b57410d151318317a8343afe043ad23",
+      "profile": {}
+    },
+    {
+      "id": "doctor-demo",
+      "name": "Demo Doctor",
+      "role": "doctor",
+      "pin_hash": "pbkdf2$100000$a8e5b6e032a15a64aa9d856df0547985$5a6c0ece734da3eb551620940c23a7fa05fd70ff1371b0c4782e7793027ec982",
+      "profile": {}
+    }
+  ]
+}

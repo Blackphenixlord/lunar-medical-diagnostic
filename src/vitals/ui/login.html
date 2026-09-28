@@ -1,0 +1,276 @@
+<!doctype html>
+<!--
+  VITALS - PIN login.
+
+  One screen for everyone. The PIN says who you are; your role decides which
+  screen opens next. The server checks the PIN and sets an HttpOnly cookie -
+  this page never stores anything itself.
+
+  Offline: no fonts, scripts or images from the internet. Everything is here.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VITALS - log in</title>
+<style>
+  /* ---- colors: all text passes 4.5:1 contrast on its background ---- */
+  :root {
+    --bg:        #1e1e1e;
+    --panel:     #2b2b2b;
+    --key:       #3a3a3a;
+    --key-press: #4a4a4a;
+    --line:      #555555;
+    --ink:       #f2f2f2;
+    --muted:     #b8b8b8;
+    --accent:    #6cb4ff;
+    --danger:    #d93025;
+    --danger-ink:#ffffff;
+    --error:     #ff8a80;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    color: var(--ink);
+    font: 18px/1.5 system-ui, "Segoe UI", Roboto, sans-serif;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 380px;
+    padding: 28px 24px;
+    background: var(--panel);
+    border-radius: 14px;
+  }
+
+  h1 { margin: 0; font-size: 28px; letter-spacing: 2px; }
+  .tagline { margin: 2px 0 22px; color: var(--muted); font-size: 15px; }
+
+  /* ---- the PIN dots ---- */
+  .dots { display: flex; gap: 14px; justify-content: center; margin: 8px 0 6px; min-height: 22px; }
+  .dot  { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--muted); }
+  .dot.filled { background: var(--ink); border-color: var(--ink); }
+
+  .message { min-height: 28px; text-align: center; font-size: 16px; color: var(--error); }
+  .message.info { color: var(--muted); }
+
+  /* ---- keypad: every key is far above the 44x44 px minimum ---- */
+  .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+  .keypad button {
+    height: 68px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--key);
+    color: var(--ink);
+    font-size: 26px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .keypad button:active { background: var(--key-press); }
+  .keypad button:disabled { opacity: .4; cursor: not-allowed; }
+  .keypad .small { font-size: 17px; }
+  .keypad .enter { background: var(--accent); color: #0b1a2a; }
+
+  .emergency {
+    width: 100%;
+    min-height: 60px;
+    margin-top: 22px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--danger);
+    color: var(--danger-ink);
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .emergency span { display: block; font-size: 14px; font-weight: 400; }
+
+  .not-built { text-align: center; }
+  .not-built button {
+    margin-top: 16px; min-height: 48px; padding: 0 24px; border: 1px solid var(--line);
+    border-radius: 10px; background: transparent; color: var(--ink); font-size: 17px; cursor: pointer;
+  }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<main class="card">
+  <h1>VITALS</h1>
+  <p class="tagline">Decision support - not a diagnosis</p>
+
+  <!-- Step 1: enter a PIN -->
+  <section id="login-view">
+    <div class="dots" id="dots" aria-label="PIN digits entered"></div>
+    <div class="message" id="message" role="status" aria-live="polite">Enter your PIN</div>
+
+    <div class="keypad" id="keypad">
+      <button data-digit="1">1</button>
+      <button data-digit="2">2</button>
+      <button data-digit="3">3</button>
+      <button data-digit="4">4</button>
+      <button data-digit="5">5</button>
+      <button data-digit="6">6</button>
+      <button data-digit="7">7</button>
+      <button data-digit="8">8</button>
+      <button data-digit="9">9</button>
+      <button class="small" id="erase" aria-label="Erase last digit">Erase</button>
+      <button data-digit="0">0</button>
+      <button class="small enter" id="enter">Enter</button>
+    </div>
+
+    <button class="emergency" id="emergency">
+      EMERGENCY - skip login
+      <span>Opens the symptom check without a PIN</span>
+    </button>
+  </section>
+
+  <!-- Step 2 (only for roles whose screen does not exist yet) -->
+  <section id="not-built-view" class="not-built" hidden>
+    <p id="not-built-text"></p>
+    <button id="log-out">Log out</button>
+  </section>
+</main>
+
+<script>
+  const MAX_DIGITS = 6;
+  const MIN_DIGITS = 4;
+
+  const ROLE_NAMES = { astronaut: "astronaut", ground: "ground crew", doctor: "doctor" };
+
+  let pin = "";
+
+  const dots    = document.getElementById("dots");
+  const message = document.getElementById("message");
+  const keypad  = document.getElementById("keypad");
+
+  // ---- drawing -------------------------------------------------------------
+
+  function drawDots() {
+    dots.innerHTML = "";
+    const count = Math.max(MIN_DIGITS, pin.length);
+    for (let i = 0; i < count; i++) {
+      const dot = document.createElement("span");
+      dot.className = i < pin.length ? "dot filled" : "dot";
+      dots.appendChild(dot);
+    }
+  }
+
+  function say(text, isError) {
+    message.textContent = text;
+    message.className = isError ? "message" : "message info";
+  }
+
+  function setKeypadEnabled(enabled) {
+    keypad.querySelectorAll("button").forEach(button => button.disabled = !enabled);
+  }
+
+  // ---- typing the PIN ------------------------------------------------------
+
+  function addDigit(digit) {
+    if (pin.length < MAX_DIGITS) pin += digit;
+    drawDots();
+  }
+
+  function eraseDigit() {
+    pin = pin.slice(0, -1);
+    drawDots();
+  }
+
+  keypad.addEventListener("click", event => {
+    const button = event.target.closest("button");
+    if (!button) return;
+    if (button.dataset.digit) addDigit(button.dataset.digit);
+  });
+  document.getElementById("erase").onclick = eraseDigit;
+  document.getElementById("enter").onclick = submitPin;
+
+  // A physical keyboard works too.
+  document.addEventListener("keydown", event => {
+    if (/^[0-9]$/.test(event.key)) addDigit(event.key);
+    else if (event.key === "Backspace") eraseDigit();
+    else if (event.key === "Enter") submitPin();
+  });
+
+  // ---- talking to the server -----------------------------------------------
+
+  async function submitPin() {
+    if (pin.length < MIN_DIGITS) {
+      say(`PINs are ${MIN_DIGITS} to ${MAX_DIGITS} digits`, true);
+      return;
+    }
+    say("Checking…", false);
+    setKeypadEnabled(false);
+
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin }),
+      });
+      const result = await response.json();
+      pin = "";
+      drawDots();
+
+      if (result.ok) return openScreen(result);
+
+      say(result.error, true);
+      if (result.retry_after) return waitOut(result.retry_after);
+    } catch (error) {
+      say("Cannot reach the VITALS server. Is it running?", true);
+    }
+    setKeypadEnabled(true);
+  }
+
+  // Lockout: count down, then let them try again.
+  function waitOut(seconds) {
+    setKeypadEnabled(false);
+    const timer = setInterval(() => {
+      seconds -= 1;
+      if (seconds <= 0) {
+        clearInterval(timer);
+        setKeypadEnabled(true);
+        say("Enter your PIN", false);
+      } else {
+        say(`Too many wrong PINs. Try again in ${seconds} seconds.`, true);
+      }
+    }, 1000);
+  }
+
+  document.getElementById("emergency").onclick = async () => {
+    try {
+      const response = await fetch("/api/emergency", { method: "POST", body: "{}" });
+      openScreen(await response.json());
+    } catch (error) {
+      say("Cannot reach the VITALS server. Is it running?", true);
+    }
+  };
+
+  function openScreen(session) {
+    if (session.page) {
+      window.location.href = session.page;
+      return;
+    }
+    // Logged in, but that role's screen has not been built yet.
+    document.getElementById("login-view").hidden = true;
+    document.getElementById("not-built-view").hidden = false;
+    document.getElementById("not-built-text").textContent =
+      `Hi ${session.name}. The ${ROLE_NAMES[session.role] || session.role} screen isn't built yet.`;
+  }
+
+  document.getElementById("log-out").onclick = async () => {
+    await fetch("/api/logout", { method: "POST", body: "{}" });
+    window.location.reload();
+  };
+
+  drawDots();
+</script>
+</body>
+</html>

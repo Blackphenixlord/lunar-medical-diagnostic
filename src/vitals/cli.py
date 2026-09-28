@@ -417,6 +417,31 @@ def cmd_serve(args) -> int:
     return 0
 
 
+def cmd_add_account(args) -> int:
+    """Add a person to accounts.json. The PIN is typed, never passed on the command line."""
+    import getpass
+
+    from .accounts import ACCOUNTS_FILE, AccountError, add_account
+
+    pin = getpass.getpass("PIN (4-6 digits, hidden): ")
+    if getpass.getpass("Same PIN again: ") != pin:
+        print("PINs did not match. Nothing saved.")
+        return 1
+
+    profile = {}
+    for item in args.profile:
+        label, _, value = item.partition("=")
+        profile[label.strip()] = value.strip()
+
+    try:
+        add_account(ACCOUNTS_FILE, args.id, args.name, args.role, pin, profile)
+    except AccountError as exc:
+        print(f"Not saved: {exc}")
+        return 1
+    print(f"Saved {args.name} ({args.role}) to {ACCOUNTS_FILE}")
+    return 0
+
+
 # --- argument parsing ------------------------------------------------------
 
 
@@ -486,6 +511,14 @@ def build_parser() -> argparse.ArgumentParser:
     serve.add_argument("--model", default=None)
     serve.add_argument("--no-open", action="store_true", help="do not open a browser")
     serve.set_defaults(func=cmd_serve)
+
+    account = subcommands.add_parser("add-account", help="add a person who can log in with a PIN")
+    account.add_argument("--id", required=True, help="short unique id, e.g. astro-2")
+    account.add_argument("--name", required=True, help='shown on screen, e.g. "Alex Rivera"')
+    account.add_argument("--role", required=True, choices=["astronaut", "ground", "doctor"])
+    account.add_argument("--profile", action="append", default=[], metavar="LABEL=VALUE",
+                         help='profile line shown to crew, e.g. --profile "Height=178 cm" (repeatable)')
+    account.set_defaults(func=cmd_add_account)
 
     return parser
 

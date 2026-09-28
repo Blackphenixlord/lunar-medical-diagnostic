@@ -10,3 +10,6 @@ env/
 Thumbs.db
 out/
 *.egg-info/
+
+# Real VITALS accounts (hashed PINs). Never commit. See accounts.example.json.
+accounts.json
