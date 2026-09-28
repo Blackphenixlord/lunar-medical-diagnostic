@@ -117,6 +117,9 @@ class Result:
     escalation_reasons: list[str]
     unknown_findings: list[str]
     observations: Observations
+    # The conditions behind the alarm, in ranked order, so a screen can show
+    # the right advice without parsing escalation_reasons.
+    escalated_ids: list[str] = field(default_factory=list)
 
     @property
     def top(self) -> Optional[ConditionScore]:
@@ -197,7 +200,9 @@ def diagnose(
 
     candidates.sort(key=lambda score: -score.probability)
 
-    escalation_reasons = _collect_escalations(candidates, knowledge_base)
+    escalations = _collect_escalations(candidates, knowledge_base)
+    escalation_reasons = [text for _, text in escalations]
+    escalated_ids = list(dict.fromkeys(condition_id for condition_id, _ in escalations))
 
     findings_any_rule_uses = {
         evidence.finding
@@ -215,6 +220,7 @@ def diagnose(
         escalation_reasons=sorted(set(escalation_reasons)),
         unknown_findings=unknown_findings,
         observations=observations,
+        escalated_ids=escalated_ids,
     )
 
 
@@ -259,8 +265,12 @@ def has_supporting_evidence(score: ConditionScore, knowledge_base: KnowledgeBase
 def _collect_escalations(
     ranked: list[ConditionScore],
     knowledge_base: KnowledgeBase,
-) -> list[str]:
+) -> list[tuple[str, str]]:
     """Decide what, if anything, gets escalated to the flight surgeon.
+
+    Returns (condition id, plain-words reason) pairs. The reason never carries
+    the probability: those numbers come from priors that have no source yet,
+    and a "91%" on a crew screen reads as precision we do not have.
 
     Only the leading few conditions are considered, not everything still
     standing. We shipped this wrong once: `fever` is a red flag in the dental,
@@ -269,7 +279,7 @@ def _collect_escalations(
     did not have, and a chest infection they did not have. Four alarms, one
     problem, and a CMO who now trusts none of them.
     """
-    reasons: list[str] = []
+    reasons: list[tuple[str, str]] = []
 
     for rank, score in enumerate(ranked[:ESCALATION_CANDIDATES]):
         if not _may_raise_alarm(score, rank):
@@ -279,12 +289,10 @@ def _collect_escalations(
             labels = ", ".join(
                 knowledge_base.label_for(finding_id) for finding_id in score.red_flags_hit
             )
-            reasons.append(f"{score.name}: red flag present ({labels})")
+            reasons.append((score.id, f"{score.name}: red flag present ({labels})"))
 
         if score.urgency in ("urgent", "emergency") and score.probability >= URGENT_ESCALATION_THRESHOLD:
-            reasons.append(
-                f"{score.name}: {score.urgency} condition at {score.probability:.0%}"
-            )
+            reasons.append((score.id, f"{score.name}: {score.urgency} condition"))
 
     return reasons
 

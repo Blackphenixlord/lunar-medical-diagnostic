@@ -187,6 +187,10 @@
   .condition .head { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
   .condition .name { font-size: 18px; font-weight: 650; }
   .condition .strength { font-size: 14px; color: var(--muted); }
+  .condition .flag {
+    font-size: 13px; font-weight: 700; padding: 1px 8px; border-radius: 6px;
+    background: var(--emergency-bg); color: var(--emergency-ink);
+  }
   .condition .why { margin: 4px 0; }
   .condition .source { font-size: 15px; }
   .condition .no-source { color: var(--error-ink); font-size: 15px; }
@@ -539,15 +543,24 @@ function setQuestion(question) {
   $("message").placeholder = question ? "Type your answer…" : "Describe how you feel…";
 }
 
-// The overall level for this answer: the top condition's urgency. If the
-// engine escalated, it is shown as at least URGENT - the engine never gets
-// overruled downward by the screen.
+// The overall level for this answer.
+//   - If VITALS escalated, the server says how serious (answer.escalation.level):
+//     the most serious condition the alarm is about, never lower than URGENT.
+//   - Otherwise it is the top condition's urgency.
 function levelOf(answer) {
+  const escalation = answer.escalation || { level: "none" };
+  if (answer.escalate) return escalation.level === "emergency" ? "emergency" : "urgent";
+
   const top = answer.differential[0];
-  if (!top) return answer.escalate ? "urgent" : "none";
-  let level = LEVEL_ORDER.includes(top.urgency) ? top.urgency : "routine";
-  if (answer.escalate && LEVEL_ORDER.indexOf(level) < LEVEL_ORDER.indexOf("urgent")) level = "urgent";
-  return level;
+  if (!top) return "none";
+  return LEVEL_ORDER.includes(top.urgency) ? top.urgency : "routine";
+}
+
+// The condition the advice should be about: the most serious one the alarm
+// is about, if there is an alarm; otherwise the top-ranked condition.
+function leadCondition(answer) {
+  const flagged = (answer.escalation && answer.escalation.conditions) || [];
+  return flagged[0] || answer.differential[0] || null;
 }
 
 // The server adds "   [finding_id]" to each question. The crew never sees ids.
@@ -572,21 +585,46 @@ function showAnswer(answer) {
   card.appendChild(body);
 
   // ---- 2. what it could be ----
-  if (answer.differential.length === 0) {
+  // Conditions the alarm is about come first and are marked, even if the
+  // model ranked them low or did not list them at all.
+  const flagged = (answer.escalation && answer.escalation.conditions) || [];
+  const flaggedIds = new Set(flagged.map(c => c.id));
+  const unlisted = flagged.filter(c => !answer.differential.some(d => d.id === c.id));
+
+  if (answer.differential.length === 0 && unlisted.length === 0) {
     body.appendChild(el("p", null,
       "Nothing in the VITALS knowledge base fits what you described. Tell the ground crew."));
   } else {
     body.appendChild(el("h3", null, "What it could be"));
-    answer.differential.forEach(condition => body.appendChild(drawCondition(condition)));
+    unlisted.forEach(condition => body.appendChild(drawCondition(condition, true)));
+    answer.differential
+      .filter(condition => flaggedIds.has(condition.id))
+      .forEach(condition => body.appendChild(drawCondition(condition, true)));
+    answer.differential
+      .filter(condition => !flaggedIds.has(condition.id))
+      .forEach(condition => body.appendChild(drawCondition(condition, false)));
   }
 
-  // ---- 3. what to do: the top condition's advice, from the knowledge base ----
+  // ---- 3. what to do: advice for the lead condition, from the knowledge base ----
   const top = answer.differential[0];
-  if (top && top.recommend.length) {
-    body.appendChild(el("h3", null, "What to do"));
+  const lead = leadCondition(answer);
+  if (lead && lead.recommend && lead.recommend.length) {
+    const aboutSomethingElse = top && lead.id !== top.id;
+    body.appendChild(el("h3", null,
+      aboutSomethingElse ? `What to do now - treat it as possible ${lead.name}` : "What to do"));
     const list = el("ul");
-    top.recommend.forEach(step => list.appendChild(el("li", null, step)));
+    lead.recommend.forEach(step => list.appendChild(el("li", null, step)));
     body.appendChild(list);
+
+    // The top-ranked condition's advice is still there, but second and folded away.
+    if (aboutSomethingElse && top.recommend.length) {
+      const other = el("details", "known");
+      other.appendChild(el("summary", null, `If ground medical rules that out: advice for ${top.name}`));
+      const otherList = el("ul");
+      top.recommend.forEach(step => otherList.appendChild(el("li", null, step)));
+      other.appendChild(otherList);
+      body.appendChild(other);
+    }
   }
 
   // ---- 4. what VITALS is least sure about ----
@@ -608,15 +646,19 @@ function showAnswer(answer) {
   scrollToTopOf(card);
 }
 
-function drawCondition(condition) {
+function drawCondition(condition, flagged) {
   const box = el("div", "condition");
 
   const head = el("div", "head");
   head.appendChild(el("span", "name", condition.name));
-  head.appendChild(el("span", "strength", STRENGTH_WORDS[condition.confidence] || "Possible"));
+  if (flagged) head.appendChild(el("span", "flag", "Serious - the reason for the alert"));
+  if (condition.confidence) {
+    head.appendChild(el("span", "strength", "VITALS rates it: " + (STRENGTH_WORDS[condition.confidence] || "Possible")));
+  }
   box.appendChild(head);
 
   if (condition.reasoning) box.appendChild(el("p", "why", condition.reasoning));
+  else if (flagged) box.appendChild(el("p", "why", "The backup check flagged this from what you described."));
 
   // Sources come from the knowledge base. If there are none, say so - never hide the condition.
   if (!condition.sources || condition.sources.length === 0) {

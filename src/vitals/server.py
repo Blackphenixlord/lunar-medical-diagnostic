@@ -35,6 +35,7 @@ the same pipeline the CLI uses, so the UI can never drift from what
 from __future__ import annotations
 
 import json
+import re
 import time
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -86,6 +87,7 @@ def run_pipeline(knowledge_base, complaint: str, model: str,
 
     retrieved = retrieve(knowledge_base, complaint, observations, limit=RETRIEVAL_LIMIT)
     answer = ask(knowledge_base, complaint, retrieved, observations=observations, model=model)
+    readable = _readable_text(knowledge_base)
 
     return {
         "ok": True,
@@ -93,8 +95,9 @@ def run_pipeline(knowledge_base, complaint: str, model: str,
         "model": answer.model,
         "sensor_status": answer.sensor_status,
         "escalate": answer.escalate,
-        "escalation_reason": answer.escalation_reason,
-        "uncertainty": answer.uncertainty,
+        "escalation_reason": readable(answer.escalation_reason),
+        "escalation": _escalation_summary(knowledge_base, answer),
+        "uncertainty": readable(answer.uncertainty),
         "next_questions": answer.next_questions,
         "dropped": answer.dropped,
         "known": _known_findings(knowledge_base, observations),
@@ -104,9 +107,9 @@ def run_pipeline(knowledge_base, complaint: str, model: str,
                 "name": candidate.name,
                 "urgency": candidate.urgency,
                 "confidence": candidate.confidence,
-                "reasoning": candidate.reasoning,
-                "supporting": candidate.supporting,
-                "against": candidate.against,
+                "reasoning": readable(candidate.reasoning),
+                "supporting": [readable(text) for text in candidate.supporting],
+                "against": [readable(text) for text in candidate.against],
                 "recommend": candidate.recommend,
                 "sources": candidate.sources,
             }
@@ -127,6 +130,59 @@ def run_pipeline(knowledge_base, complaint: str, model: str,
         },
     }
 
+
+
+def _escalation_summary(knowledge_base, answer) -> dict[str, Any]:
+    """The alarm, as data the screen can act on.
+
+    `level` is the most serious urgency among the conditions the escalation is
+    about (at least "urgent" whenever it escalates), and `conditions` lists
+    those conditions with their advice and sources from the KB. The screen
+    leads with these - it must never show shoulder advice under a DCS alarm
+    just because the model ranked shoulder first.
+    """
+    if not answer.escalate:
+        return {"level": "none", "conditions": []}
+
+    conditions = []
+    for condition_id in answer.escalated_ids:
+        condition = knowledge_base.conditions.get(condition_id)
+        if condition is None:
+            continue
+        conditions.append({
+            "id": condition_id,
+            "name": condition.name,
+            "urgency": condition.urgency,
+            "recommend": condition.recommend,
+            "sources": condition.sources,
+        })
+
+    # Most serious first.
+    order = {"emergency": 0, "urgent": 1, "monitor": 2, "routine": 3}
+    conditions.sort(key=lambda c: order.get(c["urgency"], 4))
+
+    level = "urgent"
+    if conditions and conditions[0]["urgency"] == "emergency":
+        level = "emergency"
+    return {"level": level, "conditions": conditions}
+
+
+def _readable_text(knowledge_base):
+    """Swap raw condition ids the model wrote ("msk_shoulder_overuse") for names.
+
+    Acceptance criteria 2.1: the crew never sees a KB id. The model is told to
+    use ids, so it sometimes leaks them into its own sentences.
+    """
+    names = {condition_id: condition.name
+             for condition_id, condition in knowledge_base.conditions.items()}
+    pattern = re.compile(r"\b(" + "|".join(map(re.escape, names)) + r")\b") if names else None
+
+    def readable(text: str) -> str:
+        if not text or pattern is None:
+            return text
+        return pattern.sub(lambda match: names[match.group(1)], text)
+
+    return readable
 
 
 def clean_corrections(knowledge_base, corrections) -> dict[str, bool]:

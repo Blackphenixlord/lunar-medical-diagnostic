@@ -136,6 +136,10 @@ class Answer:
     sensor_status: str = "no sensors connected"
     dropped: list[str] = field(default_factory=list)   # ids the model invented
     raw: str = ""                                      # the unparsed reply, for debugging
+    # The conditions the escalation is ABOUT - from the model or the backup
+    # engine. A screen leads with these, so a DCS alarm never sits on top of
+    # shoulder-strain advice.
+    escalated_ids: list[str] = field(default_factory=list)
 
     @property
     def top(self) -> Optional[Candidate]:
@@ -186,9 +190,19 @@ def ask(
         )
 
     differential, dropped = _validated_differential(reply, knowledge_base, allowed_ids)
-    escalate, escalation_reason = _escalation(reply, differential)
-    if not escalate:
-        escalate, escalation_reason = _engine_backstop(knowledge_base, known, escalation_reason)
+    escalate, escalation_reason, escalated_ids = _escalation(reply, differential)
+
+    # The backup engine always gets a vote, even when the model escalated: the
+    # model may escalate for a kidney stone while the engine sees the bends.
+    engine_ids, engine_reason = _engine_backstop(knowledge_base, known)
+    new_ids = [condition_id for condition_id in engine_ids if condition_id not in escalated_ids]
+    if new_ids:
+        if escalate:
+            escalation_reason = f"{escalation_reason} {engine_reason}".strip()
+        else:
+            escalate = True
+            escalation_reason = f"{engine_reason} Escalation added automatically - the model did not escalate."
+        escalated_ids = escalated_ids + new_ids
 
     return Answer(
         differential=differential,
@@ -201,6 +215,7 @@ def ask(
         dropped=dropped,
         sensor_status=sensors.status(),
         raw=raw,
+        escalated_ids=escalated_ids,
     )
 
 
@@ -289,10 +304,22 @@ def _validated_differential(
 ) -> tuple[list[Candidate], list[str]]:
     """Constraints 1 and 2: only allowed ids, and citations come from the KB.
 
+    The model sometimes answers with a condition's full NAME instead of its id
+    ("Spaceflight-Associated Neuro-Ocular Syndrome" instead of "sans"). Found
+    27 Sep: it picked SANS correctly and we threw the answer away as invented.
+    An exact name match (ignoring case) of an ALLOWED condition is accepted -
+    the model is still limited to the retrieved set; only the spelling is
+    forgiven.
+
     Returns (candidates, ids that were dropped).
     """
     candidates: list[Candidate] = []
     dropped: list[str] = []
+    allowed_by_name = {
+        knowledge_base.conditions[condition_id].name.strip().lower(): condition_id
+        for condition_id in allowed_ids
+        if condition_id in knowledge_base.conditions
+    }
 
     for entry in reply.get("differential") or []:
         if not isinstance(entry, dict):
@@ -300,8 +327,12 @@ def _validated_differential(
 
         condition_id = str(entry.get("condition_id", "")).strip()
         if condition_id not in allowed_ids:
+            condition_id = allowed_by_name.get(condition_id.lower(), condition_id)
+        if condition_id not in allowed_ids:
             dropped.append(condition_id or "<blank>")
             continue
+        if any(candidate.condition_id == condition_id for candidate in candidates):
+            continue    # named twice (once by id, once by name) - keep the first
 
         condition = knowledge_base.conditions[condition_id]
         candidates.append(
@@ -333,8 +364,8 @@ def _clean_phrases(value: Any) -> list[str]:
     return [str(item) for item in value][:MAX_EVIDENCE_PHRASES]
 
 
-def _escalation(reply: dict, differential: list[Candidate]) -> tuple[bool, str]:
-    """Whether to escalate, with a backstop under the model.
+def _escalation(reply: dict, differential: list[Candidate]) -> tuple[bool, str, list[str]]:
+    """Whether to escalate, why, and which conditions it is about.
 
     If it named an urgent or emergency condition with real confidence and did
     not escalate, we escalate anyway. A model that forgets is not a reason for
@@ -343,26 +374,29 @@ def _escalation(reply: dict, differential: list[Candidate]) -> tuple[bool, str]:
     escalate = bool(reply.get("escalate", False))
     reason = str(reply.get("escalation_reason", "")).strip()
 
+    serious_ids = [
+        candidate.condition_id for candidate in differential
+        if candidate.urgency in ("urgent", "emergency")
+        and candidate.confidence in ("high", "moderate")
+    ]
+
     if escalate:
-        return True, reason
+        return True, reason, serious_ids
 
     for candidate in differential:
-        serious = candidate.urgency in ("urgent", "emergency")
-        confident = candidate.confidence in ("high", "moderate")
-        if serious and confident:
+        if candidate.condition_id in serious_ids:
             return True, (
                 f"{candidate.name} is a {candidate.urgency} condition and the model "
                 f"rated it {candidate.confidence} confidence. Escalation added automatically."
-            )
+            ), serious_ids
 
-    return False, reason
+    return False, reason, []
 
 
 def _engine_backstop(
     knowledge_base: KnowledgeBase,
     known: dict[str, Any],
-    reason: str,
-) -> tuple[bool, str]:
+) -> tuple[list[str], str]:
     """Last line of defence: if the deterministic engine escalates, so do we.
 
     Added after the first full benchmark on Joshua's PC (26 Sep): the model
@@ -374,18 +408,21 @@ def _engine_backstop(
 
     Only runs when something was actually extracted - with nothing known the
     engine falls back to base rates, which is not evidence of anything.
+
+    Returns the condition ids the engine escalated on (empty if none) and a
+    plain-words reason with no probabilities in it.
     """
     if not known:
-        return False, reason
+        return [], ""
 
     result = diagnose(knowledge_base, known)
     if not result.escalate:
-        return False, reason
+        return [], ""
 
-    return True, (
+    return result.escalated_ids, (
         "The backup scoring engine flagged this: "
         + "; ".join(result.escalation_reasons)
-        + ". Escalation added automatically - the model did not escalate."
+        + "."
     )
 
 

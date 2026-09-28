@@ -420,3 +420,58 @@ def test_engine_backstop_ignores_a_complaint_with_nothing_extracted(kb, monkeypa
         "next_findings": [], "uncertainty": "",
     })
     assert ans.escalate is False
+
+
+def test_engine_backstop_adds_its_condition_even_when_the_model_escalated(kb, monkeypatch):
+    """The model escalating for the wrong reason must not hide the engine's alarm."""
+    text = ("just got back from the EVA an hour ago, my elbow has a deep ache "
+            "and there's a blotchy rash on my chest")
+    ans = _ask_with_fake_reply(kb, monkeypatch, text, {
+        "differential": [{"condition_id": "msk_shoulder_overuse", "confidence": "high",
+                          "reasoning": "overuse"}],
+        "escalate": True, "escalation_reason": "pain is severe",
+        "next_findings": [], "uncertainty": "",
+    })
+    assert ans.escalate is True
+    assert "decompression_sickness" in ans.escalated_ids
+    assert "pain is severe" in ans.escalation_reason
+    assert "Decompression" in ans.escalation_reason
+
+
+def test_engine_backstop_reason_has_no_percentages(kb, monkeypatch):
+    text = ("just got back from the EVA an hour ago, my elbow has a deep ache "
+            "and there's a blotchy rash on my chest")
+    ans = _ask_with_fake_reply(kb, monkeypatch, text, {
+        "differential": [{"condition_id": "msk_shoulder_overuse", "confidence": "high",
+                          "reasoning": "overuse"}],
+        "escalate": False, "escalation_reason": "", "next_findings": [], "uncertainty": "",
+    })
+    assert "%" not in ans.escalation_reason
+    assert ans.escalated_ids[0] == "decompression_sickness"
+
+
+def test_a_condition_named_by_its_full_name_is_accepted(kb, monkeypatch):
+    """Real 27 Sep failure: the model wrote SANS's full name instead of its id
+    and the right answer was thrown away, leaving NO MATCH on screen."""
+    text = "flight day 118, reading the procedure cards is getting harder, close up is blurry"
+    ans = _ask_with_fake_reply(kb, monkeypatch, text, {
+        "differential": [{"condition_id": "Spaceflight-Associated Neuro-Ocular Syndrome",
+                          "confidence": "moderate", "reasoning": "near vision change"}],
+        "escalate": False, "escalation_reason": "", "next_findings": [], "uncertainty": "",
+    })
+    assert [c.condition_id for c in ans.differential] == ["sans"]
+    assert ans.dropped == []
+
+
+def test_a_name_outside_the_retrieved_set_is_still_dropped(kb, monkeypatch):
+    """Forgiving the spelling must not let the model reach past what it was given."""
+    text = "flight day 118, reading the procedure cards is getting harder, close up is blurry"
+    obs = KeywordExtractor().extract(text, kb)
+    retrieved = [r for r in retrieve(kb, text, obs) if r.id != "renal_stone"]
+    fake_ollama(monkeypatch, {
+        "differential": [{"condition_id": kb.condition("renal_stone").name, "confidence": "high"}],
+        "escalate": False, "escalation_reason": "", "next_findings": [], "uncertainty": "",
+    })
+    ans = ask(kb, text, retrieved, observations=obs)
+    assert ans.differential == []
+    assert ans.dropped == [kb.condition("renal_stone").name]

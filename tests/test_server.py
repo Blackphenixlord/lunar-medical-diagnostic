@@ -275,3 +275,67 @@ def test_corrections_ignore_unknown_ids_and_non_yes_no_values(kb, monkeypatch):
                      corrections={"made_up_finding": True, "back_pain": "maybe"})
     assert "made_up_finding" not in d["trace"]["findings"]
     assert d["trace"]["findings"]["back_pain"] is True
+
+
+# --- the alarm drives the screen (27 Sep: DCS alarm showed URGENT, a "91%",
+# and shoulder advice, because the model ranked shoulder strain first) -------
+
+BENDS = ("Came in off the EVA about two hours ago. My left shoulder has this deep "
+         "boring ache, maybe a 7, and there's a weird blotchy marbled rash on my forearm.")
+
+
+def _fake_reply(monkeypatch, reply):
+    payload = json.dumps({"response": json.dumps(reply)}).encode()
+
+    class _Resp:
+        def read(self): return payload
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+
+    monkeypatch.setattr("urllib.request.urlopen", lambda *a, **k: _Resp())
+
+
+def test_engine_alarm_sets_level_to_emergency_and_names_the_condition(kb, monkeypatch):
+    _fake_reply(monkeypatch, {
+        "differential": [
+            {"condition_id": "msk_shoulder_overuse", "confidence": "high",
+             "reasoning": "consistent with msk_shoulder_overuse"},
+            {"condition_id": "decompression_sickness", "confidence": "low", "reasoning": "unlikely"}],
+        "escalate": False, "escalation_reason": "", "next_findings": [], "uncertainty": ""})
+    d = run_pipeline(kb, BENDS, "llama3.2")
+
+    assert d["escalate"] is True
+    assert d["escalation"]["level"] == "emergency"
+    assert d["escalation"]["conditions"][0]["id"] == "decompression_sickness"
+    assert d["escalation"]["conditions"][0]["recommend"] == kb.condition("decompression_sickness").recommend
+
+
+def test_no_percentages_reach_the_screen(kb, monkeypatch):
+    """Acceptance criteria 3.1. The priors behind those numbers have no source."""
+    _fake_reply(monkeypatch, {
+        "differential": [{"condition_id": "msk_shoulder_overuse", "confidence": "high", "reasoning": "x"}],
+        "escalate": False, "escalation_reason": "", "next_findings": [], "uncertainty": ""})
+    d = run_pipeline(kb, BENDS, "llama3.2")
+    assert "%" not in d["escalation_reason"]
+
+
+def test_raw_condition_ids_in_model_text_become_names(kb, monkeypatch):
+    """Acceptance criteria 2.1: the crew never sees a KB id."""
+    _fake_reply(monkeypatch, {
+        "differential": [{"condition_id": "msk_shoulder_overuse", "confidence": "high",
+                          "reasoning": "consistent with msk_shoulder_overuse"}],
+        "escalate": False, "escalation_reason": "", "next_findings": [],
+        "uncertainty": "could be msk_shoulder_overuse or decompression_sickness"})
+    d = run_pipeline(kb, BENDS, "llama3.2")
+    shoulder = kb.condition("msk_shoulder_overuse").name
+    assert d["differential"][0]["reasoning"] == f"consistent with {shoulder}"
+    assert "msk_shoulder_overuse" not in d["uncertainty"]
+    assert "decompression_sickness" not in d["uncertainty"]
+
+
+def test_no_escalation_means_level_none(kb, monkeypatch):
+    _fake_reply(monkeypatch, {
+        "differential": [], "escalate": False, "escalation_reason": "",
+        "next_findings": [], "uncertainty": ""})
+    d = run_pipeline(kb, "blorp zzz qwerty", "llama3.2")
+    assert d["escalation"] == {"level": "none", "conditions": []}
