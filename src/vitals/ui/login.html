@@ -1,11 +1,12 @@
 <!doctype html>
 <!--
-  VITALS - PIN login.
-
-  One screen for everyone. The PIN says who you are; your role decides which
-  screen opens next. The server checks the PIN and sets an HttpOnly cookie -
-  this page never stores anything itself.
-
+  VITALS - log in.
+  Layout from Cruz's mockup (Oct 2026): emblem, NAME, PASSWORD on navy.
+  "Password" is the person's PIN (4-6 digits). The name must match the PIN's
+  account; the server checks both and sets an HttpOnly cookie. This page never
+  stores anything itself.
+  The emblem is our own mark, drawn here in SVG. Do not swap in the NASA
+  insignia - its use is restricted and needs NASA's written approval.
   Offline: no fonts, scripts or images from the internet. Everything is here.
 -->
 <html lang="en">
@@ -16,235 +17,179 @@
 <style>
   /* ---- colors: all text passes 4.5:1 contrast on its background ---- */
   :root {
-    --bg:        #1e1e1e;
-    --panel:     #2b2b2b;
-    --key:       #3a3a3a;
-    --key-press: #4a4a4a;
-    --line:      #555555;
-    --ink:       #f2f2f2;
-    --muted:     #b8b8b8;
+    --navy:      #1b1e3d;
+    --field:     #a3a3a3;
+    --field-ink: #111111;
+    --ink:       #ffffff;
+    --muted:     #c9cbe0;
     --accent:    #6cb4ff;
-    --danger:    #d93025;
-    --danger-ink:#ffffff;
-    --error:     #ff8a80;
+    --accent-ink:#0b1a2a;
+    --danger:    #c5221f;
+    --error:     #ffb4ab;
   }
-
   * { box-sizing: border-box; }
-
+  [hidden] { display: none !important; }
   body {
     margin: 0;
     min-height: 100vh;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    background: var(--bg);
+    padding: 48px 16px 32px;
+    background: var(--navy);
     color: var(--ink);
     font: 18px/1.5 system-ui, "Segoe UI", Roboto, sans-serif;
   }
+  .emblem { width: 190px; height: 190px; }
+  .wordmark { margin: 10px 0 34px; text-align: center; }
+  .wordmark h1 { margin: 0; font-size: 26px; letter-spacing: 6px; }
+  .wordmark p  { margin: 0; color: var(--muted); font-size: 14px; }
 
-  .card {
+  form { width: 100%; max-width: 300px; }
+  label { display: block; margin: 0 0 4px 8px; font-size: 14px; letter-spacing: .5px; }
+  input {
     width: 100%;
-    max-width: 380px;
-    padding: 28px 24px;
-    background: var(--panel);
-    border-radius: 14px;
+    height: 48px;                       /* tap target: 44px minimum */
+    margin-bottom: 16px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 7px;
+    background: var(--field);
+    color: var(--field-ink);
+    font: inherit;
+    font-size: 20px;
   }
-
-  h1 { margin: 0; font-size: 28px; letter-spacing: 2px; }
-  .tagline { margin: 2px 0 22px; color: var(--muted); font-size: 15px; }
-
-  /* ---- the PIN dots ---- */
-  .dots { display: flex; gap: 14px; justify-content: center; margin: 8px 0 6px; min-height: 22px; }
-  .dot  { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--muted); }
-  .dot.filled { background: var(--ink); border-color: var(--ink); }
-
+  input:focus { outline: 3px solid var(--accent); }
   .message { min-height: 28px; text-align: center; font-size: 16px; color: var(--error); }
   .message.info { color: var(--muted); }
-
-  /* ---- keypad: every key is far above the 44x44 px minimum ---- */
-  .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
-  .keypad button {
-    height: 68px;
-    border: 0;
-    border-radius: 10px;
-    background: var(--key);
-    color: var(--ink);
-    font-size: 26px;
-    font-weight: 600;
-    cursor: pointer;
+  .go, .emergency, .plain {
+    width: 100%; min-height: 52px; border: 0; border-radius: 7px;
+    font: inherit; font-weight: 700; cursor: pointer;
   }
-  .keypad button:active { background: var(--key-press); }
-  .keypad button:disabled { opacity: .4; cursor: not-allowed; }
-  .keypad .small { font-size: 17px; }
-  .keypad .enter { background: var(--accent); color: #0b1a2a; }
-
+  .go { background: var(--accent); color: var(--accent-ink); }
+  .go:disabled { opacity: .45; cursor: not-allowed; }
   .emergency {
-    width: 100%;
-    min-height: 60px;
-    margin-top: 22px;
-    border: 0;
-    border-radius: 10px;
-    background: var(--danger);
-    color: var(--danger-ink);
-    font-size: 18px;
-    font-weight: 700;
-    cursor: pointer;
+    margin-top: 28px; min-height: 60px; background: var(--danger); color: #ffffff;
   }
   .emergency span { display: block; font-size: 14px; font-weight: 400; }
-
-  .not-built { text-align: center; }
-  .not-built button {
-    margin-top: 16px; min-height: 48px; padding: 0 24px; border: 1px solid var(--line);
-    border-radius: 10px; background: transparent; color: var(--ink); font-size: 17px; cursor: pointer;
-  }
-  [hidden] { display: none !important; }
+  .plain { margin-top: 16px; background: transparent; color: var(--ink); border: 1px solid var(--muted); font-weight: 400; }
+  .not-built { max-width: 320px; text-align: center; }
 </style>
 </head>
 <body>
 
-<main class="card">
-  <h1>VITALS</h1>
-  <p class="tagline">Decision support - not a diagnosis</p>
+<!-- Our own mission-patch style emblem: orbit, stars, and a pulse line. -->
+<svg class="emblem" viewBox="0 0 200 200" role="img" aria-label="VITALS emblem">
+  <defs>
+    <radialGradient id="disc" cx="40%" cy="35%" r="70%">
+      <stop offset="0" stop-color="#3f4fb8"/><stop offset="1" stop-color="#25307a"/>
+    </radialGradient>
+  </defs>
+  <circle cx="100" cy="100" r="92" fill="url(#disc)" stroke="#121530" stroke-width="4"/>
+  <g fill="#ffffff">
+    <circle cx="62" cy="48" r="2"/><circle cx="128" cy="40" r="1.6"/><circle cx="148" cy="62" r="2.2"/>
+    <circle cx="44" cy="80" r="1.4"/><circle cx="150" cy="128" r="1.6"/><circle cx="60" cy="146" r="2"/>
+    <circle cx="84" cy="36" r="1.2"/><circle cx="118" cy="160" r="1.4"/><circle cx="38" cy="118" r="1.6"/>
+  </g>
+  <ellipse cx="100" cy="100" rx="78" ry="30" fill="none" stroke="#ffffff" stroke-width="2.5"
+           transform="rotate(-24 100 100)"/>
+  <path d="M14 112 H62 L72 92 L84 134 L98 66 L110 118 L118 104 H186" fill="none"
+        stroke="#e03a3e" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="100" y="92" text-anchor="middle" fill="#ffffff"
+        font-family="system-ui, Segoe UI, sans-serif" font-size="30" font-weight="800"
+        letter-spacing="3">VITALS</text>
+</svg>
+<div class="wordmark">
+  <h1 hidden>VITALS</h1>
+  <p>Team TETHER · decision support, not a diagnosis</p>
+</div>
 
-  <!-- Step 1: enter a PIN -->
-  <section id="login-view">
-    <div class="dots" id="dots" aria-label="PIN digits entered"></div>
-    <div class="message" id="message" role="status" aria-live="polite">Enter your PIN</div>
+<form id="login-view" autocomplete="off">
+  <label for="name">NAME</label>
+  <input id="name" name="name" autocapitalize="words" spellcheck="false">
 
-    <div class="keypad" id="keypad">
-      <button data-digit="1">1</button>
-      <button data-digit="2">2</button>
-      <button data-digit="3">3</button>
-      <button data-digit="4">4</button>
-      <button data-digit="5">5</button>
-      <button data-digit="6">6</button>
-      <button data-digit="7">7</button>
-      <button data-digit="8">8</button>
-      <button data-digit="9">9</button>
-      <button class="small" id="erase" aria-label="Erase last digit">Erase</button>
-      <button data-digit="0">0</button>
-      <button class="small enter" id="enter">Enter</button>
-    </div>
+  <label for="pin">PASSWORD</label>
+  <input id="pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6">
 
-    <button class="emergency" id="emergency">
-      EMERGENCY - skip login
-      <span>Opens the symptom check without a PIN</span>
-    </button>
-  </section>
+  <div class="message info" id="message" role="status" aria-live="polite">Your password is your PIN</div>
+  <button class="go" id="go" type="submit">Log in</button>
 
-  <!-- Step 2 (only for roles whose screen does not exist yet) -->
-  <section id="not-built-view" class="not-built" hidden>
-    <p id="not-built-text"></p>
-    <button id="log-out">Log out</button>
-  </section>
-</main>
+  <button class="emergency" id="emergency" type="button">
+    EMERGENCY - skip login
+    <span>Opens the symptom check without a password</span>
+  </button>
+</form>
+
+<!-- Only for roles whose screen does not exist yet -->
+<section id="not-built-view" class="not-built" hidden>
+  <p id="not-built-text"></p>
+  <button class="plain" id="log-out">Log out</button>
+</section>
 
 <script>
-  const MAX_DIGITS = 6;
   const MIN_DIGITS = 4;
-
+  const MAX_DIGITS = 6;
   const ROLE_NAMES = { astronaut: "astronaut", ground: "ground crew", doctor: "doctor" };
 
-  let pin = "";
-
-  const dots    = document.getElementById("dots");
-  const message = document.getElementById("message");
-  const keypad  = document.getElementById("keypad");
-
-  // ---- drawing -------------------------------------------------------------
-
-  function drawDots() {
-    dots.innerHTML = "";
-    const count = Math.max(MIN_DIGITS, pin.length);
-    for (let i = 0; i < count; i++) {
-      const dot = document.createElement("span");
-      dot.className = i < pin.length ? "dot filled" : "dot";
-      dots.appendChild(dot);
-    }
-  }
+  const $ = id => document.getElementById(id);
 
   function say(text, isError) {
-    message.textContent = text;
-    message.className = isError ? "message" : "message info";
+    $("message").textContent = text;
+    $("message").className = isError ? "message" : "message info";
   }
 
-  function setKeypadEnabled(enabled) {
-    keypad.querySelectorAll("button").forEach(button => button.disabled = !enabled);
+  function setEnabled(enabled) {
+    ["name", "pin", "go"].forEach(id => $(id).disabled = !enabled);
   }
 
-  // ---- typing the PIN ------------------------------------------------------
-
-  function addDigit(digit) {
-    if (pin.length < MAX_DIGITS) pin += digit;
-    drawDots();
-  }
-
-  function eraseDigit() {
-    pin = pin.slice(0, -1);
-    drawDots();
-  }
-
-  keypad.addEventListener("click", event => {
-    const button = event.target.closest("button");
-    if (!button) return;
-    if (button.dataset.digit) addDigit(button.dataset.digit);
-  });
-  document.getElementById("erase").onclick = eraseDigit;
-  document.getElementById("enter").onclick = submitPin;
-
-  // A physical keyboard works too.
-  document.addEventListener("keydown", event => {
-    if (/^[0-9]$/.test(event.key)) addDigit(event.key);
-    else if (event.key === "Backspace") eraseDigit();
-    else if (event.key === "Enter") submitPin();
+  // Only digits go in the password box.
+  $("pin").addEventListener("input", () => {
+    $("pin").value = $("pin").value.replace(/\D/g, "").slice(0, MAX_DIGITS);
   });
 
-  // ---- talking to the server -----------------------------------------------
+  $("login-view").onsubmit = async event => {
+    event.preventDefault();
+    const name = $("name").value.trim();
+    const pin = $("pin").value;
+    if (!name) { say("Type your name", true); $("name").focus(); return; }
+    if (pin.length < MIN_DIGITS) { say(`Passwords are ${MIN_DIGITS} to ${MAX_DIGITS} digits`, true); $("pin").focus(); return; }
 
-  async function submitPin() {
-    if (pin.length < MIN_DIGITS) {
-      say(`PINs are ${MIN_DIGITS} to ${MAX_DIGITS} digits`, true);
-      return;
-    }
     say("Checking…", false);
-    setKeypadEnabled(false);
-
+    setEnabled(false);
     try {
       const response = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pin }),
+        body: JSON.stringify({ name, pin }),
       });
       const result = await response.json();
-      pin = "";
-      drawDots();
-
+      $("pin").value = "";
       if (result.ok) return openScreen(result);
-
       say(result.error, true);
       if (result.retry_after) return waitOut(result.retry_after);
     } catch (error) {
       say("Cannot reach the VITALS server. Is it running?", true);
     }
-    setKeypadEnabled(true);
-  }
+    setEnabled(true);
+    $("pin").focus();
+  };
 
-  // Lockout: count down, then let them try again.
+  // Lockout after too many wrong tries: count down, then let them try again.
   function waitOut(seconds) {
-    setKeypadEnabled(false);
+    setEnabled(false);
     const timer = setInterval(() => {
       seconds -= 1;
       if (seconds <= 0) {
         clearInterval(timer);
-        setKeypadEnabled(true);
-        say("Enter your PIN", false);
+        setEnabled(true);
+        say("Your password is your PIN", false);
       } else {
-        say(`Too many wrong PINs. Try again in ${seconds} seconds.`, true);
+        say(`Too many wrong tries. Try again in ${seconds} seconds.`, true);
       }
     }, 1000);
   }
 
-  document.getElementById("emergency").onclick = async () => {
+  $("emergency").onclick = async () => {
     try {
       const response = await fetch("/api/emergency", { method: "POST", body: "{}" });
       openScreen(await response.json());
@@ -259,18 +204,18 @@
       return;
     }
     // Logged in, but that role's screen has not been built yet.
-    document.getElementById("login-view").hidden = true;
-    document.getElementById("not-built-view").hidden = false;
-    document.getElementById("not-built-text").textContent =
+    $("login-view").hidden = true;
+    $("not-built-view").hidden = false;
+    $("not-built-text").textContent =
       `Hi ${session.name}. The ${ROLE_NAMES[session.role] || session.role} screen isn't built yet.`;
   }
 
-  document.getElementById("log-out").onclick = async () => {
+  $("log-out").onclick = async () => {
     await fetch("/api/logout", { method: "POST", body: "{}" });
     window.location.reload();
   };
 
-  drawDots();
+  $("name").focus();
 </script>
 </body>
 </html>

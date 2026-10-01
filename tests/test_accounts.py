@@ -158,3 +158,11 @@ def test_docker_image_ships_the_demo_accounts():
     file, so the server would refuse to start inside Docker and on the Jetson."""
     dockerfile = (accounts.REPO_ROOT / "Dockerfile").read_text(encoding="utf-8")
     assert "COPY accounts.example.json" in dockerfile
+
+
+def test_a_name_must_match_the_pin_when_one_is_given(desk):
+    """The new login screen sends a name with the PIN. Both must match."""
+    session = desk.log_in("1234", client="screen-1", name=desk.accounts[0].name.upper())
+    assert session.role
+    with pytest.raises(LoginRefused, match="Wrong name or PIN"):
+        desk.log_in("1234", client="screen-1", name="Somebody Else")

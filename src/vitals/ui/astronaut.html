@@ -1,25 +1,34 @@
 <!doctype html>
 <!--
   VITALS - astronaut screen (AUI).
+  Layout from Cruz's mockups (Oct 2026): navy chat area, a grey icon rail on
+  the left that opens into a drawer, grey speech bubbles, a grey "Type Here"
+  bar with a "+" to send.
 
-  WHAT IT DOES
-    Chat:    describe how you feel, get an answer, answer VITALS' follow-up
-             questions. Every turn stays on screen.
-    Profile: the logged-in crewmember's details, from their account.
-    Vitals:  sensor readings. None are connected yet, so it says so.
+  THE DRAWER (icons, top to bottom)
+    Chats     (glasses)  new chat + this session's earlier chats
+    Profile   (person)   the logged-in crewmember's details, from their account
+    Vitals    (pulse)    sensor readings. None are connected, so it says so.
+    Camera    (camera)   reserved for the camera. Not connected.
+    Supplies  (crate)    reserved for the medical kit list. Not connected.
 
   RULES THIS PAGE FOLLOWS (from UI_ACCEPTANCE_CRITERIA.md)
     - It renders what the server sends. Conditions, reasons, advice and sources
       all come from the engine; none of that wording is typed in here.
     - The escalation level is always a WORD plus a color, never color alone.
-    - No percentages or scores anywhere. Confidence is shown as words.
-    - No made-up vital signs. Unconnected sensors say "Not connected".
+    - No percentages anywhere. Confidence is shown as words.
+    - No made-up vital signs. The mockup's monitor numbers are NOT drawn:
+      every slot shows "--" and "No sensor" until real hardware exists.
     - Server errors are shown exactly as the server wrote them.
     - Works offline: one file, nothing loaded from the internet.
 
   WHO IS LOGGED IN
     The server knows, through an HttpOnly cookie. This page asks /api/me and
-    sends you back to the PIN screen if nobody is.
+    sends you back to the login screen if nobody is.
+
+  CHAT HISTORY
+    Earlier chats are kept in this page only, for this login. They are gone
+    after a reload or lock. Nothing is saved on the server yet.
 -->
 <html lang="en">
 <head>
@@ -30,24 +39,28 @@
   /* ==== colors ============================================================
      Every text color passes 4.5:1 contrast on the background it sits on. */
   :root {
-    --bg:       #1e1e1e;   /* main area */
-    --side:     #2b2b2b;   /* sidebar */
-    --card:     #2b2b2b;
-    --card-2:   #353535;
-    --line:     #4d4d4d;
-    --ink:      #f2f2f2;
-    --muted:    #bdbdbd;
-    --accent:   #6cb4ff;
-    --accent-ink:#0b1a2a;
-    --error-bg: #3b1d1d;
-    --error-ink:#ffb4ab;
+    --navy:      #1b1e3d;   /* chat area */
+    --rail:      #555555;   /* rail + drawer */
+    --rail-2:    #6a6a6a;   /* drawer buttons */
+    --tabbar:    #d6d6d6;   /* drawer's bottom icon bar */
+    --bubble:    #545454;
+    --bar:       #a3a3a3;   /* "Type Here" bar */
+    --bar-ink:   #111111;
+    --line:      #6f7391;
+    --ink:       #ffffff;
+    --muted:     #c9cbe0;
+    --accent:    #4d8dff;   /* the blue chevron */
+    --link:      #9cc4ff;
+    --close:     #e03a3e;   /* the red chevron */
+    --error-bg:  #3b1d1d;
+    --error-ink: #ffb4ab;
 
     /* escalation levels: background + text color for each */
     --emergency-bg: #c5221f; --emergency-ink: #ffffff;
     --urgent-bg:    #f28b00; --urgent-ink:    #111111;
     --monitor-bg:   #fdd663; --monitor-ink:   #111111;
     --routine-bg:   #81c995; --routine-ink:   #111111;
-    --none-bg:      #5f6368; --none-ink:      #ffffff;
+    --none-bg:      #75787d; --none-ink:      #ffffff;
   }
 
   * { box-sizing: border-box; }
@@ -55,138 +68,177 @@
 
   body {
     margin: 0;
-    background: var(--bg);
+    background: var(--navy);
     color: var(--ink);
     font: 17px/1.5 system-ui, "Segoe UI", Roboto, sans-serif;  /* readable at arm's length */
   }
-  a { color: var(--accent); }
-  button { font: inherit; cursor: pointer; }
+  a { color: var(--link); }
+  button { font: inherit; cursor: pointer; color: inherit; }
   button:disabled { opacity: .45; cursor: not-allowed; }
+  :focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
 
-  /* ==== layout: sidebar + main ============================================ */
-  /* The page never scrolls; only the conversation does, so the message box stays put. */
+  /* ==== layout: rail or drawer, then the chat ============================ */
   .app { display: flex; height: 100vh; overflow: hidden; }
 
-  .sidebar {
-    flex: 0 0 200px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 16px 10px;
-    background: var(--side);
+  .icon { width: 30px; height: 30px; display: block; }
+
+  /* ---- collapsed: a thin rail of icons ---- */
+  .rail {
+    flex: 0 0 60px;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 10px 0;
+    background: var(--rail);
   }
-  .brand { font-size: 22px; font-weight: 700; letter-spacing: 2px; padding: 0 8px 12px; }
-
-  .tab {
-    display: flex; align-items: center; gap: 12px;
-    min-height: 52px;                 /* tap targets: 44px minimum */
-    padding: 0 12px;
-    border: 0; border-radius: 10px;
-    background: transparent; color: var(--ink);
-    text-align: left;
+  .rail button, .tabbar button, .drawer-head button {
+    width: 48px; height: 48px;                 /* tap targets: 44px minimum */
+    display: grid; place-items: center;
+    border: 0; border-radius: 8px; background: transparent;
   }
-  .tab svg { width: 24px; height: 24px; flex: none; }
-  .tab.active { background: var(--card-2); box-shadow: inset 4px 0 0 var(--accent); }
+  .rail button:hover { background: var(--rail-2); }
+  .rail .lock { margin-top: auto; }
+  .chevron { width: 14px; height: 30px; }
 
-  .who { margin-top: auto; padding: 12px 8px 4px; border-top: 1px solid var(--line); font-size: 15px; }
-  .who .name { font-weight: 600; }
-  .who .role { color: var(--muted); }
-  .lock {
-    min-height: 48px; margin-top: 8px; border: 1px solid var(--line);
-    border-radius: 10px; background: transparent; color: var(--ink);
+  /* ---- open: the drawer ---- */
+  .drawer {
+    flex: 0 0 320px; width: 320px; min-width: 0;
+    display: flex; flex-direction: column;
+    background: var(--rail);
+    min-height: 0;
+  }
+  .drawer-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 8px 8px 10px;
+  }
+  .drawer-head .current { display: grid; place-items: center; width: 48px; height: 48px;
+                          border: 2px solid var(--accent); border-radius: 4px; }
+  .drawer-body { flex: 1; min-height: 0; overflow-y: auto; padding: 6px 14px 14px; }
+  .drawer h2 { margin: 4px 0 10px; font-size: 15px; letter-spacing: 1.5px; text-transform: uppercase; }
+
+  .tabbar { display: flex; background: var(--tabbar); }
+  .tabbar button { flex: 1; width: auto; height: 56px; border-radius: 0; color: #222; }
+  .tabbar button.active { background: var(--rail); color: var(--ink); }
+
+  /* Narrow screens: the drawer floats over the chat instead of pushing it. */
+  @media (max-width: 760px) {
+    .drawer { position: fixed; z-index: 5; inset: 0 auto 0 0; width: min(320px, 88vw); box-shadow: 4px 0 20px #0008; }
   }
 
-  main { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
-
-  .topbar {
-    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
-    padding: 14px 22px; border-bottom: 1px solid var(--line);
+  /* ---- drawer: chats ---- */
+  .pill {
+    width: 100%; min-height: 44px; margin-bottom: 10px; padding: 6px 12px;
+    border: 0; border-radius: 6px; background: var(--rail-2); color: var(--ink);
+    font-size: 15px; letter-spacing: .5px; text-transform: uppercase;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .topbar h1 { margin: 0; font-size: 20px; }
-  .topbar .note { color: var(--muted); font-size: 14px; }
+  .pill.new { background: #a3a3a3; color: var(--bar-ink); font-weight: 700; margin-bottom: 18px; }
+  .pill.current { box-shadow: inset 4px 0 0 var(--accent); }
+  .drawer .note { color: #f2f2f2; font-size: 14px; }
 
-  .panel { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-  .panel-body { padding: 18px 22px; overflow-y: auto; }
-
-  /* Narrow screens: sidebar becomes a row across the top. */
-  @media (max-width: 700px) {
-    .app { flex-direction: column; height: auto; min-height: 100vh; overflow: visible; }
-    .sidebar { flex: none; flex-direction: row; flex-wrap: wrap; align-items: center; }
-    .brand { padding: 0 8px; }
-    .who { margin: 0 0 0 auto; border: 0; padding: 0 8px; }
+  /* ---- drawer: profile, drawn as a sheet of paper like the mockup ---- */
+  .paper { padding: 18px; border-radius: 4px; background: #ffffff; color: #222; }
+  .paper .kicker { margin: 0; color: #8a4b4b; font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+  .paper h3 { margin: 0 0 10px; font-size: 24px; }
+  .paper .bar { height: 10px; margin: 0 -18px 12px 0; background: #b88a8a; }
+  .facts { border-collapse: collapse; width: 100%; font-size: 15px; }
+  .facts td { padding: 7px 8px 7px 0; border-bottom: 1px solid #ddd; vertical-align: top; }
+  .facts td:first-child { color: #555; width: 46%; }
+  .lock-wide {
+    width: 100%; min-height: 48px; margin-top: 14px; border: 1px solid #ffffff;
+    border-radius: 8px; background: transparent; color: var(--ink);
   }
+
+  /* ---- drawer: vitals, drawn as a bedside monitor ---- */
+  .monitor { background: #000; border-radius: 4px; padding: 8px 10px; font-family: system-ui, sans-serif; }
+  .monitor .status { color: #ffffff; font-size: 14px; padding: 4px 0 8px; border-bottom: 1px solid #333; }
+  .channel { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px 10px;
+             padding: 8px 0; border-bottom: 1px solid #222; }
+  .channel .label { font-size: 14px; font-weight: 700; }
+  .channel .value { grid-column: 2; grid-row: 1 / 3; font-size: 34px; font-weight: 700; line-height: 1; }
+  .channel .trace { height: 18px; border-bottom: 2px dotted currentColor; opacity: .7; }
+  .channel .why { grid-column: 1 / -1; color: #d0d0d0; font-size: 13px; }
+
+  /* ---- drawer: camera + supplies ---- */
+  .frame { aspect-ratio: 3 / 4; display: grid; place-items: center; padding: 20px; text-align: center;
+           border: 2px dashed #bdbdbd; border-radius: 4px; color: #f2f2f2; }
+  .supplies { width: 100%; border-collapse: collapse; background: #ffffff; color: #222;
+              outline: 2px solid #4d8dff; font-size: 14px; }
+  .supplies th { padding: 4px; border: 1px solid #bbb; font-weight: 600; }
+  .supplies td { height: 22px; border: 1px solid #ccc; }
+  .supplies .empty td { padding: 10px; color: #444; text-align: center; height: auto; }
 
   /* ==== chat ============================================================== */
-  .log { flex: 1; min-height: 0; overflow-y: auto; padding: 18px 22px; position: relative; }
-  .empty-hint { color: var(--muted); max-width: 560px; }
+  main { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
 
+  .notice {
+    margin: 14px 28px 0; padding: 10px 14px; border-radius: 10px;
+    background: var(--error-bg); color: var(--error-ink); font-size: 15px;
+  }
+  .log { flex: 1; min-height: 0; overflow-y: auto; padding: 24px 28px; position: relative; }
+  .empty-hint { max-width: 520px; padding: 18px 22px; border-radius: 22px; background: var(--bubble); }
+  .empty-hint b { display: block; margin-bottom: 4px; letter-spacing: 1px; }
+
+  /* crew bubbles sit on the right, VITALS on the left - same shape as the mockup */
   .bubble {
-    max-width: 75%; margin: 10px 0 10px auto; padding: 10px 14px;
-    border-radius: 14px 14px 4px 14px; background: var(--card-2);
-    white-space: pre-wrap;
+    max-width: min(560px, 80%); margin: 14px 0 14px auto; padding: 14px 22px;
+    border-radius: 22px; background: var(--bubble); white-space: pre-wrap;
   }
   .bubble .label { display: block; font-size: 13px; color: var(--muted); }
 
-  .notice {
-    margin: 0 22px; padding: 10px 14px; border-radius: 10px;
-    background: var(--error-bg); color: var(--error-ink); font-size: 15px;
-  }
-
-  .composer { padding: 12px 22px 18px; border-top: 1px solid var(--line); }
+  .composer { padding: 6px 28px 18px; }
   .asking { margin: 0 0 8px; font-size: 18px; }
-  .asking b { color: var(--accent); }
-  .composer-row { display: flex; gap: 10px; align-items: stretch; }
-  .composer textarea {
-    flex: 1; min-height: 60px; max-height: 180px; resize: vertical;
-    padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px;
-    background: var(--card); color: var(--ink); font: inherit;
+  .asking b { color: var(--link); }
+  .bar-row {
+    display: flex; align-items: flex-end; gap: 6px;
+    padding: 4px 4px 4px 14px; border-radius: 7px; background: var(--bar);
   }
-  .composer textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
+  .bar-row textarea {
+    flex: 1; min-height: 44px; max-height: 160px; resize: none;
+    padding: 10px 0; border: 0; background: transparent; color: var(--bar-ink);
+    font: inherit; outline: none;
+  }
+  .bar-row textarea::placeholder { color: #222; }
+  .bar-row:focus-within { outline: 3px solid var(--link); }
   .send {
-    min-width: 96px; border: 0; border-radius: 10px;
-    background: var(--accent); color: var(--accent-ink); font-weight: 700;
+    width: 48px; height: 44px; flex: none; border: 0; border-radius: 6px; background: transparent;
+    color: #ffffff; font-size: 34px; font-weight: 300; line-height: 1;
   }
-  .composer .row2 { display: flex; justify-content: space-between; margin-top: 8px; }
-  .link-button {
-    min-height: 44px; padding: 0 12px; border: 0; background: transparent;
-    color: var(--muted); text-decoration: underline;
-  }
+  .send:not(:disabled):hover { background: #8f8f8f; }
 
   /* ---- "VITALS is thinking" ---- */
   .working { display: flex; align-items: center; gap: 12px; color: var(--muted); margin: 14px 0; }
   .spinner {
     width: 20px; height: 20px; border-radius: 50%;
-    border: 3px solid var(--line); border-top-color: var(--accent);
+    border: 3px solid var(--line); border-top-color: var(--link);
     animation: spin .8s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ---- the answer card ---- */
-  .answer { margin: 14px 0 22px; border-radius: 12px; overflow: hidden; background: var(--card); }
+  /* ---- the answer: a left-hand bubble with the level band on top ---- */
+  .answer { max-width: min(640px, 92%); margin: 14px 0 22px; border-radius: 22px; overflow: hidden; background: var(--bubble); }
 
-  .level { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; padding: 14px 18px; }
+  .level { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; padding: 14px 22px; }
   .level .word { font-size: 26px; font-weight: 800; letter-spacing: 1.5px; }
   .level .escalate { font-weight: 700; }
   .level .reason { flex-basis: 100%; font-size: 15px; }
   .level.emergency { background: var(--emergency-bg); color: var(--emergency-ink);
-                     border: 5px solid #ffffff; }           /* never "a slightly different red" */
+                     border: 5px solid #ffffff; border-radius: 22px 22px 0 0; }   /* never "a slightly different red" */
   .level.emergency .word::before { content: "!! "; }
   .level.urgent    { background: var(--urgent-bg);  color: var(--urgent-ink); }
   .level.monitor   { background: var(--monitor-bg); color: var(--monitor-ink); }
   .level.routine   { background: var(--routine-bg); color: var(--routine-ink); }
   .level.none      { background: var(--none-bg);    color: var(--none-ink); }
 
-  .answer-body { padding: 14px 18px 16px; }
+  .answer-body { padding: 14px 22px 16px; }
   .answer h3 { margin: 16px 0 6px; font-size: 14px; letter-spacing: 1px;
                text-transform: uppercase; color: var(--muted); }
   .answer h3:first-child { margin-top: 0; }
   .answer ul { margin: 4px 0; padding-left: 22px; }
 
-  .condition { padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .condition { padding: 10px 0; border-bottom: 1px solid #6b6b6b; }
   .condition:last-child { border-bottom: 0; }
   .condition .head { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
   .condition .name { font-size: 18px; font-weight: 650; }
-  .condition .strength { font-size: 14px; color: var(--muted); }
+  .condition .strength { font-size: 14px; color: #e4e4e4; }
   .condition .flag {
     font-size: 13px; font-weight: 700; padding: 1px 8px; border-radius: 6px;
     background: var(--emergency-bg); color: var(--emergency-ink);
@@ -196,109 +248,143 @@
   .condition .no-source { color: var(--error-ink); font-size: 15px; }
 
   details.known { margin-top: 12px; }
-  details.known summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: var(--muted); }
+  details.known summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: #e4e4e4; }
   .known-row {
     display: flex; justify-content: space-between; align-items: center; gap: 10px;
-    padding: 6px 0; border-bottom: 1px solid var(--line);
+    padding: 6px 0; border-bottom: 1px solid #6b6b6b;
   }
   .known-row .fix {
-    min-height: 44px; min-width: 88px; border: 1px solid var(--line);
+    min-height: 44px; min-width: 88px; border: 1px solid #bdbdbd;
     border-radius: 8px; background: transparent; color: var(--ink);
   }
-  .corrected { color: var(--muted); font-size: 14px; }
+  .corrected { color: #e4e4e4; font-size: 14px; }
 
-  .error-card { margin: 14px 0; padding: 14px 18px; border-radius: 12px; background: var(--error-bg); }
+  .error-card { max-width: 640px; margin: 14px 0; padding: 14px 22px; border-radius: 22px; background: var(--error-bg); }
   .error-card b { display: block; color: var(--error-ink); margin-bottom: 6px; }
   .error-card pre { margin: 0; white-space: pre-wrap; font: 15px/1.5 ui-monospace, Consolas, monospace; }
-
-  /* ==== profile and vitals =============================================== */
-  .facts { border-collapse: collapse; width: 100%; max-width: 560px; }
-  .facts td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
-  .facts td:first-child { color: var(--muted); width: 45%; }
-
-  .sensor-note { margin: 0 0 16px; padding: 12px 14px; border-radius: 10px; background: var(--card-2); }
-  .sensors { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
-  .sensor { padding: 14px; border-radius: 10px; background: var(--card); }
-  .sensor .what { color: var(--muted); font-size: 15px; }
-  .sensor .reading { font-size: 20px; font-weight: 600; margin-top: 4px; }
 </style>
 </head>
 <body>
 
+<!-- ==== icons, drawn once and reused ===================================== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-chats" viewBox="0 0 40 40">
+    <g fill="none" stroke="currentColor" stroke-width="2.4">
+      <circle cx="11" cy="21" r="7"/><circle cx="29" cy="21" r="7"/>
+      <path d="M18 20q2-2 4 0M4 21H1M36 21h3"/></g></symbol>
+  <symbol id="i-profile" viewBox="0 0 40 40">
+    <g fill="currentColor"><circle cx="20" cy="12" r="7"/>
+      <path d="M7 37c0-9 6-14 13-14s13 5 13 14z"/></g></symbol>
+  <symbol id="i-vitals" viewBox="0 0 40 40">
+    <path d="M2 22h9l4-10 6 20 5-14 3 4h9" fill="none" stroke="currentColor" stroke-width="2.6"
+          stroke-linejoin="round" stroke-linecap="round"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 40 40">
+    <path d="M3 26c2-9 9-14 17-14h9l4 6-4 8H11z" fill="currentColor"/>
+    <circle cx="26" cy="20" r="9" fill="#cfd3d6" stroke="#333" stroke-width="1.6"/>
+    <circle cx="26" cy="20" r="3.5" fill="#333"/></symbol>
+  <symbol id="i-supplies" viewBox="0 0 40 40">
+    <rect x="4" y="4" width="32" height="32" rx="2" fill="#c8823e" stroke="#5b3410" stroke-width="2"/>
+    <rect x="9" y="9" width="22" height="22" fill="none" stroke="#5b3410" stroke-width="1.6"/>
+    <path d="M9 9l22 22M31 9L9 31" stroke="#5b3410" stroke-width="1.6"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 40 40">
+    <g fill="none" stroke="currentColor" stroke-width="2.6">
+      <rect x="9" y="18" width="22" height="17" rx="2"/><path d="M14 18v-5a6 6 0 0 1 12 0v5"/></g></symbol>
+  <symbol id="i-open" viewBox="0 0 14 30"><path d="M2 2l10 13L2 28z" fill="currentColor"/></symbol>
+  <symbol id="i-close" viewBox="0 0 14 30"><path d="M12 2L2 15l10 13z" fill="currentColor"/></symbol>
+</svg>
+
 <div class="app">
 
-  <!-- ==== sidebar ======================================================= -->
-  <nav class="sidebar" aria-label="Sections">
-    <div class="brand">VITALS</div>
-
-    <button class="tab active" data-panel="chat">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <path d="M4 5h16v11H9l-5 4z"/></svg>
-      Chat
-    </button>
-    <button class="tab" data-panel="profile">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
-      Profile
-    </button>
-    <button class="tab" data-panel="vitals">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <path d="M2 12h5l2-5 4 10 2-5h7"/></svg>
-      Vitals
-    </button>
-
-    <div class="who">
-      <div class="name" id="who-name">…</div>
-      <div class="role" id="who-role"></div>
-      <button class="lock" id="lock">Lock screen</button>
-    </div>
+  <!-- ==== collapsed rail ================================================= -->
+  <nav class="rail" id="rail" aria-label="Sections">
+    <button id="open-drawer" title="Open the side panel" aria-label="Open the side panel" style="color:var(--close)">
+      <svg class="chevron"><use href="#i-open"/></svg></button>
+    <button data-section="chats"    title="Chats"    aria-label="Chats"><svg class="icon" style="color:#111"><use href="#i-chats"/></svg></button>
+    <button data-section="profile"  title="Profile"  aria-label="Profile"><svg class="icon" style="color:#c9c9c9"><use href="#i-profile"/></svg></button>
+    <button data-section="vitals"   title="Vitals"   aria-label="Vitals"><svg class="icon" style="color:#111"><use href="#i-vitals"/></svg></button>
+    <button data-section="camera"   title="Camera"   aria-label="Camera"><svg class="icon" style="color:#222"><use href="#i-camera"/></svg></button>
+    <button data-section="supplies" title="Supplies" aria-label="Supplies"><svg class="icon"><use href="#i-supplies"/></svg></button>
+    <button class="lock" id="lock-rail" title="Lock screen" aria-label="Lock screen"><svg class="icon" style="color:#f2f2f2"><use href="#i-lock"/></svg></button>
   </nav>
 
+  <!-- ==== open drawer ==================================================== -->
+  <aside class="drawer" id="drawer" hidden>
+    <div class="drawer-head">
+      <span class="current" id="current-icon"></span>
+      <button id="close-drawer" title="Close the side panel" aria-label="Close the side panel" style="color:var(--accent)">
+        <svg class="chevron"><use href="#i-close"/></svg></button>
+    </div>
+
+    <div class="drawer-body">
+      <!-- chats -->
+      <section data-panel="chats">
+        <button class="pill new" id="new-chat">New chat +</button>
+        <div id="chat-list"></div>
+        <p class="note">Earlier chats stay here until you lock the screen.</p>
+      </section>
+
+      <!-- profile -->
+      <section data-panel="profile" hidden>
+        <div class="paper" id="profile-body"></div>
+        <button class="lock-wide" id="lock">Lock screen</button>
+      </section>
+
+      <!-- vitals -->
+      <section data-panel="vitals" hidden>
+        <div class="monitor">
+          <div class="status" id="sensor-note">Checking sensors…</div>
+          <div id="sensor-slots"></div>
+        </div>
+      </section>
+
+      <!-- camera -->
+      <section data-panel="camera" hidden>
+        <h2>Camera</h2>
+        <div class="frame">No camera connected.<br>This space is saved for it.</div>
+      </section>
+
+      <!-- supplies -->
+      <section data-panel="supplies" hidden>
+        <h2>Medical supplies</h2>
+        <table class="supplies">
+          <thead><tr><th>Item</th><th>Product</th><th>Qty.</th></tr></thead>
+          <tbody id="supply-rows"></tbody>
+        </table>
+      </section>
+    </div>
+
+    <nav class="tabbar" aria-label="Sections">
+      <button data-section="chats"    aria-label="Chats"><svg class="icon"><use href="#i-chats"/></svg></button>
+      <button data-section="profile"  aria-label="Profile"><svg class="icon"><use href="#i-profile"/></svg></button>
+      <button data-section="vitals"   aria-label="Vitals"><svg class="icon"><use href="#i-vitals"/></svg></button>
+      <button data-section="camera"   aria-label="Camera"><svg class="icon"><use href="#i-camera"/></svg></button>
+      <button data-section="supplies" aria-label="Supplies"><svg class="icon"><use href="#i-supplies"/></svg></button>
+    </nav>
+  </aside>
+
+  <!-- ==== chat =========================================================== -->
   <main>
-    <header class="topbar">
-      <h1 id="panel-title">Chat</h1>
-      <span class="note">Decision support - not a diagnosis</span>
-    </header>
+    <div class="notice" id="emergency-notice" hidden>
+      Emergency access: you are not logged in. The ground crew will see this
+      case as emergency access.
+    </div>
 
-    <!-- ==== chat ======================================================== -->
-    <section class="panel" id="panel-chat">
-      <div class="notice" id="emergency-notice" hidden>
-        Emergency access: you are not logged in. The ground crew will see this
-        case as emergency access.
+    <div class="log" id="log" aria-live="polite">
+      <div class="empty-hint" id="empty-hint">
+        <b>VITALS</b>
+        Tell me how you feel, in your own words. Say the flight day if you know it.
+        I will ask follow-up questions. I give decision support, not a diagnosis.
       </div>
+    </div>
 
-      <div class="log" id="log" aria-live="polite">
-        <p class="empty-hint" id="empty-hint">
-          Tell VITALS how you feel, in your own words. Say the flight day if you know it.
-          VITALS will ask follow-up questions.
-        </p>
+    <form class="composer" id="composer">
+      <p class="asking" id="asking" hidden><b>VITALS asks:</b> <span id="asking-text"></span></p>
+      <div class="bar-row">
+        <label for="message" hidden>Your message</label>
+        <textarea id="message" rows="1" placeholder="Type Here"></textarea>
+        <button class="send" id="send" type="submit" title="Send" aria-label="Send">+</button>
       </div>
-
-      <form class="composer" id="composer">
-        <p class="asking" id="asking" hidden><b>VITALS asks:</b> <span id="asking-text"></span></p>
-        <div class="composer-row">
-          <label for="message" hidden>Your message</label>
-          <textarea id="message" placeholder="Describe how you feel…"></textarea>
-          <button class="send" id="send" type="submit">Send</button>
-        </div>
-        <div class="row2">
-          <button class="link-button" id="new-case" type="button">Start a new case</button>
-        </div>
-      </form>
-    </section>
-
-    <!-- ==== profile ===================================================== -->
-    <section class="panel" id="panel-profile" hidden>
-      <div class="panel-body" id="profile-body"></div>
-    </section>
-
-    <!-- ==== vitals ====================================================== -->
-    <section class="panel" id="panel-vitals" hidden>
-      <div class="panel-body">
-        <p class="sensor-note" id="sensor-note">Checking sensors…</p>
-        <div class="sensors" id="sensor-slots"></div>
-      </div>
-    </section>
+    </form>
   </main>
 </div>
 
@@ -310,9 +396,18 @@
 // Lock the screen after this long with no taps or typing. Station screens are shared.
 const IDLE_LOCK_MINUTES = 10;
 
-// The four vitals the hardware plan targets (see claude/hardware-sensors.md).
-// Only the NAMES live here. Readings will come from the server once sensors exist.
-const PLANNED_SENSORS = ["Heart rate", "Blood oxygen (SpO2)", "Blood pressure", "Temperature"];
+// The vitals the hardware plan targets (see claude/hardware-sensors.md), with
+// the monitor color for each. Only NAMES live here - never a reading.
+const PLANNED_SENSORS = [
+  { name: "Heart rate",          color: "#3ddc4a" },
+  { name: "Blood oxygen (SpO2)", color: "#34d3e8" },
+  { name: "Blood pressure",      color: "#ffffff" },
+  { name: "Temperature",         color: "#f5a524" },
+  { name: "Respiration",         color: "#f2e33a" },
+];
+
+// Rows drawn in the empty supplies table, to match the mockup.
+const EMPTY_SUPPLY_ROWS = 14;
 
 // Escalation levels, most serious first. The word is always shown with the color.
 const LEVEL_WORDS = {
@@ -367,9 +462,6 @@ async function loadSession() {
   const response = await fetch("/api/me");
   if (response.status === 401) return backToLogin();
   me = await response.json();
-
-  $("who-name").textContent = me.name;
-  $("who-role").textContent = me.emergency ? "Emergency access" : "Astronaut";
   $("emergency-notice").hidden = !me.emergency;
   drawProfile();
 }
@@ -379,6 +471,7 @@ async function lockScreen() {
   backToLogin();
 }
 $("lock").onclick = lockScreen;
+$("lock-rail").onclick = lockScreen;
 
 // Idle lock: any tap or key press restarts the countdown.
 let idleTimer = null;
@@ -390,19 +483,38 @@ function restartIdleTimer() {
 
 
 /* ==========================================================================
-   Sidebar tabs
+   The rail and the drawer
    ========================================================================== */
 
-document.querySelectorAll(".tab").forEach(tab => {
-  tab.onclick = () => showPanel(tab.dataset.panel, tab.textContent.trim());
-});
+let section = "chats";
 
-function showPanel(name, title) {
-  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.panel === name));
-  document.querySelectorAll(".panel").forEach(p => p.hidden = p.id !== "panel-" + name);
-  $("panel-title").textContent = title;
-  if (name === "vitals") drawVitals();
+function openDrawer(name) {
+  section = name || section;
+  $("rail").hidden = true;
+  $("drawer").hidden = false;
+
+  document.querySelectorAll("[data-panel]").forEach(p => p.hidden = p.dataset.panel !== section);
+  document.querySelectorAll(".tabbar button").forEach(b => b.classList.toggle("active", b.dataset.section === section));
+
+  // The icon in the top-left box is the section that is open.
+  const current = $("current-icon");
+  current.innerHTML = "";
+  current.appendChild(document.querySelector(`.tabbar [data-section="${section}"] svg`).cloneNode(true));
+
+  if (section === "vitals") drawVitals();
+  if (section === "chats") drawChatList();
 }
+
+function closeDrawer() {
+  $("drawer").hidden = true;
+  $("rail").hidden = false;
+}
+
+$("open-drawer").onclick = () => openDrawer();
+$("close-drawer").onclick = closeDrawer;
+document.querySelectorAll("[data-section]").forEach(button => {
+  button.onclick = () => openDrawer(button.dataset.section);
+});
 
 
 /* ==========================================================================
@@ -415,24 +527,8 @@ let askedQuestions = new Set();     // so the same question is never asked twice
 let currentQuestion = null;         // the question on screen right now, if any
 let busy = false;
 
-// Kept so "Start a new case" can put the starting hint back.
+// Kept so a new chat can put the starting hint back.
 const emptyHint = $("empty-hint").cloneNode(true);
-
-function startNewCase() {
-  caseText = "";
-  corrections = {};
-  askedQuestions = new Set();
-  setQuestion(null);
-  $("log").innerHTML = "";
-  $("log").appendChild(emptyHint.cloneNode(true));
-  $("message").value = "";
-  $("message").focus();
-}
-$("new-case").onclick = () => {
-  if (!caseText || confirm("Start a new case? This conversation will be cleared from the screen.")) {
-    startNewCase();
-  }
-};
 
 $("composer").onsubmit = event => {
   event.preventDefault();
@@ -448,16 +544,23 @@ $("composer").onsubmit = event => {
   caseText = caseText ? `${caseText}\n${line}` : line;
 
   $("message").value = "";
+  growBox();
   askVitals();
 };
 
-// Enter sends; Shift+Enter makes a new line.
+// Enter sends; Shift+Enter makes a new line. The box grows as you type.
 $("message").addEventListener("keydown", event => {
   if (event.key === "Enter" && !event.shiftKey) {
     event.preventDefault();
     $("composer").requestSubmit();
   }
 });
+function growBox() {
+  const box = $("message");
+  box.style.height = "auto";
+  box.style.height = box.scrollHeight + "px";
+}
+$("message").addEventListener("input", growBox);
 
 function correctFinding(finding) {
   if (busy) return;
@@ -490,6 +593,73 @@ async function askVitals() {
 
 
 /* ==========================================================================
+   Chat history: earlier chats in this login, kept in the page only
+   ========================================================================== */
+
+const chats = [];          // { title, caseText, corrections, askedQuestions, currentQuestion, log }
+let active = null;         // the chat on screen
+
+function newChatState() {
+  return { title: "", caseText: "", corrections: {}, askedQuestions: new Set(),
+           currentQuestion: null, log: null };
+}
+
+// Park the chat on screen: its words, state and log nodes go into its record.
+function park() {
+  if (!active) return;
+  Object.assign(active, { caseText, corrections, askedQuestions, currentQuestion });
+  active.title = caseText.split("\n")[0].slice(0, 60);
+  const log = document.createDocumentFragment();
+  while ($("log").firstChild) log.appendChild($("log").firstChild);
+  active.log = log;
+}
+
+// Put a chat on screen.
+function show(chat) {
+  active = chat;
+  ({ caseText, corrections, askedQuestions } = chat);
+  $("log").innerHTML = "";
+  if (chat.log) $("log").appendChild(chat.log);
+  else $("log").appendChild(emptyHint.cloneNode(true));
+  chat.log = null;
+  setQuestion(chat.currentQuestion);
+  drawChatList();
+}
+
+function startNewChat() {
+  if (busy) return;
+  park();
+  // Only keep a chat in the list if something was said in it.
+  if (active && active.caseText && !chats.includes(active)) chats.unshift(active);
+  show(newChatState());
+  $("message").focus();
+}
+
+function switchTo(chat) {
+  if (busy || chat === active) return;
+  park();
+  if (active.caseText && !chats.includes(active)) chats.unshift(active);
+  show(chat);
+}
+
+function drawChatList() {
+  const list = $("chat-list");
+  list.innerHTML = "";
+  // The chat on screen is listed too, once something has been said in it.
+  const all = active && caseText && !chats.includes(active) ? [active, ...chats] : chats;
+  all.forEach(chat => {
+    const title = chat === active ? caseText.split("\n")[0].slice(0, 60) : chat.title;
+    const pill = el("button", "pill" + (chat === active ? " current" : ""), title || "Untitled");
+    pill.title = title;
+    pill.onclick = () => switchTo(chat);
+    list.appendChild(pill);
+  });
+}
+
+$("new-chat").onclick = startNewChat;
+
+
+/* ==========================================================================
    Drawing the chat
    ========================================================================== */
 
@@ -509,6 +679,7 @@ function showCrewMessage(text, question) {
   if (question) bubble.appendChild(el("span", "label", question));
   bubble.appendChild(document.createTextNode(text));
   addToLog(bubble);
+  if (!$("drawer").hidden && section === "chats") drawChatList();
 }
 
 // "VITALS is thinking… 12s". Local models take a while; this stops double taps.
@@ -540,7 +711,7 @@ function setQuestion(question) {
   currentQuestion = question;
   $("asking").hidden = !question;
   $("asking-text").textContent = question || "";
-  $("message").placeholder = question ? "Type your answer…" : "Describe how you feel…";
+  $("message").placeholder = question ? "Type your answer here" : "Type Here";
 }
 
 // The overall level for this answer.
@@ -705,17 +876,21 @@ function drawKnown(known) {
 
 
 /* ==========================================================================
-   Profile and vitals
+   Profile, vitals, supplies
    ========================================================================== */
 
 function drawProfile() {
   const body = $("profile-body");
   body.innerHTML = "";
   if (me.emergency) {
-    body.appendChild(el("p", null, "Emergency access has no profile. Lock the screen and log in with your PIN to see it."));
+    body.appendChild(el("p", "kicker", "Emergency access"));
+    body.appendChild(el("h3", null, "Unnamed crewmember"));
+    body.appendChild(el("p", null, "No profile on emergency access. Lock the screen and log in to see yours."));
     return;
   }
-  body.appendChild(el("h2", null, me.name));
+  body.appendChild(el("p", "kicker", "Astronaut"));
+  body.appendChild(el("h3", null, me.name));
+  body.appendChild(el("div", "bar"));
   const entries = Object.entries(me.profile || {});
   if (entries.length === 0) {
     body.appendChild(el("p", null, "No profile details are on file."));
@@ -734,20 +909,37 @@ function drawProfile() {
 async function drawVitals() {
   const slots = $("sensor-slots");
   slots.innerHTML = "";
-  PLANNED_SENSORS.forEach(name => {
-    const slot = el("div", "sensor");
-    slot.appendChild(el("div", "what", name));
-    slot.appendChild(el("div", "reading", "Not connected"));
-    slots.appendChild(slot);
+  PLANNED_SENSORS.forEach(sensor => {
+    const row = el("div", "channel");
+    row.style.color = sensor.color;
+    row.appendChild(el("div", "label", sensor.name));
+    row.appendChild(el("div", "value", "--"));
+    row.appendChild(el("div", "trace"));
+    row.appendChild(el("div", "why", "No sensor connected"));
+    slots.appendChild(row);
   });
 
   try {
     const health = await (await fetch("/api/health")).json();
     $("sensor-note").textContent = health.sensors === "no sensors connected"
-      ? "No sensor connected. Nothing has been measured - VITALS only knows what you tell it."
+      ? "Nothing has been measured. VITALS only knows what you tell it."
       : `Sensors: ${health.sensors}`;
   } catch (error) {
     $("sensor-note").textContent = "Cannot reach the VITALS server to check sensors.";
+  }
+}
+
+function drawSupplies() {
+  const rows = $("supply-rows");
+  const note = el("tr", "empty");
+  const cell = el("td", null, "No supply list connected yet.");
+  cell.colSpan = 3;
+  note.appendChild(cell);
+  rows.appendChild(note);
+  for (let i = 0; i < EMPTY_SUPPLY_ROWS; i++) {
+    const row = el("tr");
+    for (let c = 0; c < 3; c++) row.appendChild(el("td"));
+    rows.appendChild(row);
   }
 }
 
@@ -757,6 +949,8 @@ async function drawVitals() {
    ========================================================================== */
 
 loadSession();
+drawSupplies();
+show(newChatState());
 restartIdleTimer();
 $("message").focus();
 </script>

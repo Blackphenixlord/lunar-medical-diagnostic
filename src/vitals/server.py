@@ -14,7 +14,7 @@ ROUTES
     GET  /api/health    is the KB loaded, is ollama up, what models exist
     GET  /api/examples  the prompt bank, so the UI can offer real complaints
     GET  /api/me        who is logged in (401 if nobody)
-    POST /api/login     {"pin": "1234"} -> sets the session cookie
+    POST /api/login     {"pin": "1234", "name": "optional"} -> sets the session cookie
     POST /api/emergency skip the PIN: astronaut screen as an unnamed crewmember
     POST /api/logout
     POST /api/ask       {"complaint": "...", "model": "...",
@@ -340,7 +340,8 @@ class Handler(BaseHTTPRequestHandler):
     def _login(self, payload: dict):
         pin = str(payload.get("pin", ""))
         try:
-            session = self.desk.log_in(pin, client=self.client_address[0])
+            session = self.desk.log_in(pin, client=self.client_address[0],
+                                       name=str(payload.get("name", "")) or None)
         except LoginRefused as exc:
             code = 429 if exc.retry_after else 401
             return self._json(code, {"ok": False, "error": str(exc),

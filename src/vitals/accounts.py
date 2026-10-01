@@ -191,13 +191,22 @@ class LoginDesk:
         remaining = self._locked_until.get(client, 0) - self.clock()
         return max(0, int(remaining + 0.999))
 
-    def log_in(self, pin: str, client: str) -> Session:
-        """Return a new session, or raise LoginRefused with a message for the screen."""
+    def log_in(self, pin: str, client: str, name: Optional[str] = None) -> Session:
+        """Return a new session, or raise LoginRefused with a message for the screen.
+
+        `name` is optional. When the login screen sends one, it must match the
+        account's name or id (case does not matter) as well as the PIN. A wrong
+        name counts as a wrong try, and the message never says which part was wrong.
+        """
         wait = self.seconds_locked(client)
         if wait:
             raise LoginRefused(f"Too many wrong PINs. Try again in {wait} seconds.", wait)
 
         account = next((a for a in self.accounts if pin_matches(pin, a.pin_hash)), None)
+        wanted = (name or "").strip().casefold()
+        if account is not None and wanted and wanted not in (
+                account.name.casefold(), account.id.casefold()):
+            account = None
 
         with self._lock:
             if account is None:
@@ -209,7 +218,7 @@ class LoginDesk:
                     raise LoginRefused(
                         f"Too many wrong PINs. Try again in {LOCKOUT_SECONDS} seconds.",
                         LOCKOUT_SECONDS)
-                raise LoginRefused("Wrong PIN.")
+                raise LoginRefused("Wrong name or PIN." if wanted else "Wrong PIN.")
 
             self._wrong_tries.pop(client, None)
             return self._open(Session(token=secrets.token_urlsafe(32), account_id=account.id,
