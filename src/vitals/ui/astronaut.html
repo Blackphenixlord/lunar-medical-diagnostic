@@ -9,7 +9,8 @@
     Chats     (glasses)  new chat + this session's earlier chats
     Profile   (person)   the logged-in crewmember's details, from their account
     Vitals    (pulse)    sensor readings. None are connected, so it says so.
-    Camera    (camera)   reserved for the camera. Not connected.
+    Doctor notes (head mirror) the doctor's answers to your cases, once ground
+                         medical has reviewed and verified them. None yet.
     Supplies  (crate)    reserved for the medical kit list. Not connected.
 
   RULES THIS PAGE FOLLOWS (from UI_ACCEPTANCE_CRITERIA.md)
@@ -157,9 +158,19 @@
   .channel .trace { height: 18px; border-bottom: 2px dotted currentColor; opacity: .7; }
   .channel .why { grid-column: 1 / -1; color: #d0d0d0; font-size: 13px; }
 
-  /* ---- drawer: camera + supplies ---- */
-  .frame { aspect-ratio: 3 / 4; display: grid; place-items: center; padding: 20px; text-align: center;
-           border: 2px dashed #bdbdbd; border-radius: 4px; color: #f2f2f2; }
+  /* ---- drawer: doctor notes, drawn as lined notebook paper like the mockup ---- */
+  .note-paper {
+    min-height: 420px; padding: 6px 14px 20px 52px; border-radius: 2px;
+    color: #14246b; font-size: 16px; line-height: 28px;
+    background-color: #fbfbf7;
+    background-image:
+      linear-gradient(to right, transparent 40px, #e57373 40px, #e57373 42px, transparent 42px),
+      repeating-linear-gradient(to bottom, transparent 0, transparent 27px, #a9c4e8 27px, #a9c4e8 28px);
+  }
+  .note-paper h3 { margin: 0; font-size: 19px; line-height: 56px; }
+  .note-paper p { margin: 0 0 28px; }
+
+  /* ---- drawer: supplies ---- */
   .supplies { width: 100%; border-collapse: collapse; background: #ffffff; color: #222;
               outline: 2px solid #4d8dff; font-size: 14px; }
   .supplies th { padding: 4px; border: 1px solid #bbb; font-weight: 600; }
@@ -278,10 +289,11 @@
   <symbol id="i-vitals" viewBox="0 0 40 40">
     <path d="M2 22h9l4-10 6 20 5-14 3 4h9" fill="none" stroke="currentColor" stroke-width="2.6"
           stroke-linejoin="round" stroke-linecap="round"/></symbol>
-  <symbol id="i-camera" viewBox="0 0 40 40">
-    <path d="M3 26c2-9 9-14 17-14h9l4 6-4 8H11z" fill="currentColor"/>
-    <circle cx="26" cy="20" r="9" fill="#cfd3d6" stroke="#333" stroke-width="1.6"/>
-    <circle cx="26" cy="20" r="3.5" fill="#333"/></symbol>
+  <symbol id="i-notes" viewBox="0 0 40 40">
+    <path d="M2 30c3-11 11-17 21-17 6 0 11 2 15 6l-3 3c-3-3-7-5-12-5-8 0-14 5-17 13z" fill="currentColor"/>
+    <circle cx="25" cy="18" r="10" fill="#d9dde0" stroke="#333" stroke-width="1.6"/>
+    <circle cx="25" cy="18" r="6" fill="none" stroke="#9aa1a6" stroke-width="1.4"/>
+    <circle cx="25" cy="18" r="2" fill="#333"/></symbol>
   <symbol id="i-supplies" viewBox="0 0 40 40">
     <rect x="4" y="4" width="32" height="32" rx="2" fill="#c8823e" stroke="#5b3410" stroke-width="2"/>
     <rect x="9" y="9" width="22" height="22" fill="none" stroke="#5b3410" stroke-width="1.6"/>
@@ -302,7 +314,7 @@
     <button data-section="chats"    title="Chats"    aria-label="Chats"><svg class="icon" style="color:#111"><use href="#i-chats"/></svg></button>
     <button data-section="profile"  title="Profile"  aria-label="Profile"><svg class="icon" style="color:#c9c9c9"><use href="#i-profile"/></svg></button>
     <button data-section="vitals"   title="Vitals"   aria-label="Vitals"><svg class="icon" style="color:#111"><use href="#i-vitals"/></svg></button>
-    <button data-section="camera"   title="Camera"   aria-label="Camera"><svg class="icon" style="color:#222"><use href="#i-camera"/></svg></button>
+    <button data-section="notes"    title="Doctor notes" aria-label="Doctor notes"><svg class="icon" style="color:#222"><use href="#i-notes"/></svg></button>
     <button data-section="supplies" title="Supplies" aria-label="Supplies"><svg class="icon"><use href="#i-supplies"/></svg></button>
     <button class="lock" id="lock-rail" title="Lock screen" aria-label="Lock screen"><svg class="icon" style="color:#f2f2f2"><use href="#i-lock"/></svg></button>
   </nav>
@@ -337,10 +349,16 @@
         </div>
       </section>
 
-      <!-- camera -->
-      <section data-panel="camera" hidden>
-        <h2>Camera</h2>
-        <div class="frame">No camera connected.<br>This space is saved for it.</div>
+      <!-- doctor notes -->
+      <section data-panel="notes" hidden>
+        <div class="note-paper">
+          <h3>Doctor notes</h3>
+          <p><b>No doctor notes yet.</b></p>
+          <p>When ground medical sends one of your cases to a doctor, the doctor's
+             answer shows up here after the ground crew checks it.</p>
+          <p>Until then, follow what VITALS told you in the chat, and call the
+             ground crew if anything gets worse.</p>
+        </div>
       </section>
 
       <!-- supplies -->
@@ -357,7 +375,7 @@
       <button data-section="chats"    aria-label="Chats"><svg class="icon"><use href="#i-chats"/></svg></button>
       <button data-section="profile"  aria-label="Profile"><svg class="icon"><use href="#i-profile"/></svg></button>
       <button data-section="vitals"   aria-label="Vitals"><svg class="icon"><use href="#i-vitals"/></svg></button>
-      <button data-section="camera"   aria-label="Camera"><svg class="icon"><use href="#i-camera"/></svg></button>
+      <button data-section="notes"    aria-label="Doctor notes"><svg class="icon"><use href="#i-notes"/></svg></button>
       <button data-section="supplies" aria-label="Supplies"><svg class="icon"><use href="#i-supplies"/></svg></button>
     </nav>
   </aside>
