@@ -271,21 +271,25 @@ prompts:
       should still win over a dental cause.
 
   - id: none_eye_foreign_body
-    category: nothing_fits
+    category: classic
     text: "Something flew into my eye while I was working in the rack and it's watering and stinging."
-    expect: none
+    expect: eye_foreign_body
     escalate: false
     why: >
       Ocular foreign body is a real ISS hazard - debris does not fall in
-      microgravity, it floats at head height. We have NO rule. Correct answer is
-      to say so.
+      microgravity, it floats at head height. This was a "nothing fits" prompt
+      until the eye_foreign_body rule was added (2 Oct 2026). Id kept so old
+      benchmark runs still line up.
 
   - id: none_burn
-    category: nothing_fits
+    category: classic
     text: "I burned my forearm on a hot surface during the payload swap, it's red and blistering."
-    expect: none
+    expect: burn
     escalate: false
-    why: Burns are a gap. Do not let the laceration rule swallow them - different treatment entirely.
+    why: >
+      Small second-degree burn. Was a "nothing fits" gap until the burn rule
+      (2 Oct 2026). Still must not be swallowed by the laceration rule -
+      different treatment entirely. Id kept so old benchmark runs line up.
 
   - id: none_radiation
     category: nothing_fits
@@ -307,3 +311,95 @@ prompts:
       The dangerous dental branch - swelling plus fever means a spreading
       infection. Also the regression guard for alarm noise: fever is a red flag
       in four rules, and this case used to raise four separate alarms.
+
+  # ---------- general conditions added 2 Oct 2026 (NASA IMM baselines) ----------
+
+  - id: rash_classic
+    category: classic
+    text: "I've got an itchy red rash under the harness straps where my shirt rubs. Been there three days, no fever."
+    expect: skin_rash
+    escalate: false
+    why: Friction and sweat rash - the most common skin complaint on ISS.
+
+  - id: uti_classic
+    category: classic
+    text: "It burns when I pee and I keep having to pee every twenty minutes, plus pressure low in my belly. No fever, no pain in my side."
+    expect: urinary_tract_infection
+    escalate: false
+    why: Simple bladder infection. The denials (no fever, no flank pain) are what keep it from escalating.
+
+  - id: mimic_uti_vs_renal
+    category: mimic
+    text: "Blood in my urine and it burns when I pee, but the pain comes in waves and shoots down to my groin."
+    expect: renal_stone
+    escalate: true
+    why: >
+      UTI and kidney stone both cause blood and burning. Pain in waves that
+      spreads to the groin is the stone. Must not settle for the milder answer.
+
+  - id: diarrhea_classic
+    category: classic
+    text: "Diarrhea since last night with stomach cramps and some nausea. Two of us are sick with the same thing."
+    expect: diarrhea_gastroenteritis
+    escalate: false
+    why: Stomach bug. Two sick crew should push the advice toward checking food and water.
+
+  - id: constipation_classic
+    category: classic
+    text: "Flight day 3. I have not been able to poop since we got here and my belly is bloated. Not vomiting."
+    expect: constipation_adaptation
+    escalate: false
+    why: Space adaptation constipation in the first days.
+
+  - id: appendicitis_classic
+    category: classic
+    text: "Flight day 80. Pain started around my belly button yesterday and moved to the lower right part of my belly. No appetite, it hurts more when I cough, temp 38.2."
+    expect: appendicitis
+    escalate: true
+    why: The textbook story. No surgery on orbit, so this must escalate.
+
+  - id: allergy_classic
+    category: classic
+    text: "I took a new medication an hour ago and now I've got hives all over my arms, really itchy, and I keep sneezing. No trouble breathing."
+    expect: allergic_reaction
+    escalate: false
+    why: Mild reaction to a medicine - the most common cause on orbit per NASA. The breathing denial keeps it out of anaphylaxis.
+
+  - id: anaphylaxis_classic
+    category: classic
+    text: "I took a new antibiotic and now my throat feels tight, my lips are swelling, I'm wheezing and I feel light headed."
+    expect: anaphylaxis
+    escalate: true
+    why: Anaphylaxis. Epinephrine now. The single most time-critical prompt in the bank.
+
+  - id: acs_classic
+    category: classic
+    text: "Flight day 120. Crushing chest pain that started while I was on the treadmill, it goes down my left arm, I'm in a cold sweat and short of breath."
+    expect: acute_coronary_syndrome
+    escalate: true
+    why: Classic heart attack story. Rare in screened crew, never seen in flight, and not survivable to miss.
+
+  - id: mimic_chest_wall
+    category: mimic
+    text: "My chest hurts on the right side after ARED, it's sore when I press on it and sharper when I take a deep breath."
+    expect: none
+    escalate: false
+    why: >
+      Chest wall strain after resistive exercise. The heart rule must NOT win -
+      pain you can reproduce by pressing, and that is sharper on breathing,
+      argues against the heart. We have no chest-wall rule, so the right answer
+      is "nothing fits", not a cardiac alarm.
+
+  - id: head_injury_classic
+    category: classic
+    text: "I hit my head on the hatch, I think I blacked out for a second, now I have a headache and I can't remember what happened right before."
+    expect: head_injury
+    escalate: true
+    why: Concussion with loss of consciousness and a memory gap - both red flags.
+
+  - id: toxic_classic
+    category: classic
+    text: "There was an ammonia smell and the alarm went off. Now my throat burns, I'm coughing and my eyes are watering. The commander has the same symptoms."
+    expect: toxic_inhalation
+    escalate: true
+    why: Ammonia leak. Two crew with the same symptoms at once means the air, not a bug.

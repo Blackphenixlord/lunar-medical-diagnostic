@@ -1,0 +1,67 @@
+id: appendicitis
+name: Appendicitis
+aka: [appendix]
+category: gastrointestinal
+urgency: emergency
+# NASA IMM baseline (2020): 0.000934 per person-year in flight (Bayesian estimate;
+# no confirmed in-flight case in the US program). Floored at 0.005 like the other
+# rare-but-evacuation conditions in this KB, so the backup engine can still
+# surface it. A missed appendix costs far more than a false alarm.
+prior: 0.005
+
+description: >
+  Inflamed appendix. Classic story: dull pain around the belly button that
+  moves to the lower right side, loss of appetite, nausea, then fever. Pain
+  gets worse with movement or coughing. Can burst within a day or two.
+
+microgravity_note: >
+  No one in the US space program has had appendicitis in flight, but every
+  long mission is a sample of the general population and the ISS has no
+  surgery. NASA notes that organs shift position in microgravity, so the
+  pain may not sit in the classic lower-right spot - an atypical
+  presentation is expected. Remote analogs such as Antarctic stations and
+  submarines have treated it with bowel rest, IV fluids and antibiotics,
+  but a complicated case is modelled as an evacuation.
+
+findings:
+  - finding: abdominal_pain_rlq
+    weight: 2.6
+    absent_weight: -1.6
+    note: Not required - in microgravity the pain may sit somewhere unusual.
+  - finding: pain_moved_to_rlq
+    weight: 2.2
+    note: Pain that starts at the belly button and moves to the lower right is the classic story.
+  - finding: loss_of_appetite
+    weight: 1.4
+  - finding: pain_worse_on_movement
+    weight: 1.6
+    note: Peritoneal irritation. Also a red flag on its own.
+  - finding: fever
+    weight: 1.0
+  - finding: nausea
+    weight: 0.6
+  - finding: vomiting
+    weight: 0.6
+  - finding: diarrhea
+    weight: -0.8
+  - finding: pain_colicky
+    weight: -0.8
+    note: Pain in waves fits a stone better.
+  - finding: hematuria
+    weight: -0.8
+
+red_flags: [fever, vomiting, pain_worse_on_movement]
+
+recommend:
+  - Contact ground medical now. Possible appendicitis is a flight surgeon decision.
+  - Nothing to eat or drink until the flight surgeon says so.
+  - Record temperature and pain location every few hours; note if the pain moves or spreads across the belly.
+  - Ultrasound of the lower right belly with ground guidance, if trained.
+  - Do not take pain medicine or laxatives on your own before ground medical has assessed you.
+
+differential: [renal_stone, diarrhea_gastroenteritis, urinary_tract_infection, constipation_adaptation]
+
+sources:
+  - title: "Appendicitis - NASA Integrated Medical Model CliFF Baseline (2020)"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/appendicitis-cliff.pdf"
+    note: No confirmed in-flight case; atypical presentation possible due to shifting abdominal organs; complicated cases modelled as evacuation.

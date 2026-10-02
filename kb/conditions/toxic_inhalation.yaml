@@ -1,0 +1,75 @@
+id: toxic_inhalation
+name: Toxic or Smoke Inhalation
+aka: [ammonia leak, smoke inhalation, fumes, chemical exposure]
+category: environmental
+urgency: urgent
+# NASA IMM baselines: toxic inhalation 0.354 events per year (2023, vehicle-level);
+# smoke inhalation 0.018 per person-year (2020, ISS PRA fire model).
+prior: 0.02
+
+description: >
+  Breathing in smoke, ammonia or another chemical released into the cabin.
+  Burning eyes, nose and throat, cough, chest tightness or wheezing, and
+  sometimes headache or nausea. Usually short and mild, but it can damage
+  the airway.
+
+microgravity_note: >
+  A spacecraft is a sealed box: a leak or fire contaminates the air everyone
+  breathes, and there is no going outside. Ammonia from the external cooling
+  loops is the main historical concern; NASA also lists formaldehyde,
+  ethylene glycol and off-gassing materials. In microgravity smoke does not
+  rise to the ceiling - it spreads through the whole module. Air-quality
+  monitors usually catch a leak before it reaches dangerous levels, and NASA
+  modelled most exposures as mild and self-limited (about 83%). If more than
+  one crewmember has symptoms at once, assume the air.
+
+findings:
+  - finding: chemical_exposure
+    weight: 3.0
+    absent_weight: -3.0
+    required: true
+    note: No smoke, fumes or leak, no inhalation injury.
+  - finding: throat_burning
+    weight: 1.4
+  - finding: cough
+    weight: 1.2
+  - finding: shortness_of_breath
+    weight: 1.2
+  - finding: wheezing
+    weight: 1.0
+  - finding: eye_pain
+    weight: 0.6
+  - finding: eye_watering
+    weight: 0.6
+  - finding: chest_pain
+    weight: 0.6
+  - finding: headache
+    weight: 0.6
+  - finding: nausea
+    weight: 0.4
+  - finding: others_affected
+    weight: 1.4
+    note: Several people with the same symptoms at once points at the air.
+  - finding: confusion
+    weight: 0.6
+  - finding: fever
+    weight: -1.0
+
+red_flags: [shortness_of_breath, wheezing, confusion]
+
+recommend:
+  - Follow the emergency procedure for smoke or a toxic leak first - masks on, crew to the safe module.
+  - Get the affected crewmember to clean air and give oxygen from the medical kit if breathing is hard.
+  - Flush the eyes if they burn.
+  - Call ground medical and report what was released, if known, and the air-monitor readings.
+  - Watch for 24 hours - airway swelling and breathing trouble can get worse hours later.
+
+differential: [anaphylaxis, urti, tension_headache_co2, burn]
+
+sources:
+  - title: "Toxic Inhalation Exposure - NASA Integrated Medical Model CliFF Baseline (2023)"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/toxic-inhalation-exposure-cliff-2023.pdf"
+    note: 0.354 events per year; ammonia, formaldehyde, ethylene glycol, off-gassing; 83% mild and self-limited.
+  - title: "Smoke Inhalation - NASA Integrated Medical Model CliFF Baseline (2020)"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/smoke-inhalation-cliff.pdf"
+    note: 0.018 per person-year; Mir fires; smoke inhalation is an injury of its own, not only part of a burn.

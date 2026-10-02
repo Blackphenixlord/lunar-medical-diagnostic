@@ -1,0 +1,57 @@
+id: constipation_adaptation
+name: Constipation (space adaptation)
+aka: [constipated, can't go, blocked up]
+category: gastrointestinal
+urgency: routine
+# NASA IMM baseline (2020): 18.7% of crew (151 / 807), first days of flight.
+prior: 0.12
+
+description: >
+  Hard or infrequent bowel movements in the first days of flight, often with
+  bloating. Usually settles within the first five days.
+
+microgravity_note: >
+  NASA classes this as a space adaptation condition: it shows up in the
+  first days and then goes away. The gut slows down in microgravity, the
+  fluid shift leaves crew drier, the diet changes, and motion sickness
+  medicines (anticholinergics) slow the bowel further. Using a zero-g toilet
+  for the first time does not help. If constipation starts late in a mission,
+  or comes with vomiting or severe pain, it is not adaptation.
+
+findings:
+  - finding: no_bowel_movement
+    weight: 3.0
+    absent_weight: -2.5
+  - finding: bloating
+    weight: 1.2
+  - finding: abdominal_cramping
+    weight: 0.6
+  - finding: mission_elapsed_days
+    weight: -1.5
+    absent_weight: 1.0
+    note: An adaptation condition. Late in the mission it is something else.
+  - finding: sleep_aid_use
+    weight: 0.3
+  - finding: diarrhea
+    weight: -2.5
+  - finding: fever
+    weight: -1.0
+
+# Vomiting and blood are red flags ONLY - deliberately not weighted as evidence.
+# Weighted, "flight day 2 + vomiting" floated this rule up under motion
+# sickness and fired a false alarm. Vomiting with no bowel movement can be a
+# blockage, so it still escalates once constipation is actually on the table.
+red_flags: [vomiting, blood_in_stool]
+
+recommend:
+  - Drink more water through the day; aim for the fluid target on your plan.
+  - Use the stool softener or laxative in the medical kit as directed by the flight surgeon.
+  - Keep up daily exercise - it helps the gut move.
+  - Escalate if you vomit, the belly becomes hard or very painful, or nothing passes for several days despite treatment.
+
+differential: [appendicitis, diarrhea_gastroenteritis]
+
+sources:
+  - title: "Constipation (space adaptation) - NASA Integrated Medical Model CliFF Baseline (2020)"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/constipation-space-adaptation-cliff.pdf"
+    note: 18.7% of crew; slowed bowel, fluid shift, diet and anticholinergic drugs; resolves within the first five days.

@@ -1,0 +1,67 @@
+id: allergic_reaction
+name: Allergic Reaction (mild to moderate)
+aka: [allergy, hives, reaction to a medicine]
+category: immunologic
+urgency: monitor
+# NASA IMM baseline (2020): 0.57 events per person-year in flight (26 / 45.49).
+prior: 0.08
+
+description: >
+  The body overreacting to a medicine, food or substance: hives, itching,
+  sneezing, a runny nose or watery eyes. Mild unless the lips, tongue or
+  throat swell or breathing gets hard - that is anaphylaxis.
+
+microgravity_note: >
+  NASA reports that the most common cause of an allergic reaction on orbit is
+  medication - including vaccines and drugs taken for the first time in
+  flight. The immune system is dysregulated in spaceflight, which can make
+  reactions more likely. No in-flight allergic reaction has required an
+  evacuation, but the same reaction can turn into anaphylaxis, and the crew
+  has to recognise the turn without a hospital nearby.
+
+findings:
+  - finding: hives
+    weight: 2.2
+  - finding: itching
+    weight: 1.2
+  - finding: new_medication_or_exposure
+    weight: 1.4
+    note: The cause is usually a medicine taken shortly before.
+  - finding: sneezing
+    weight: 0.8
+  - finding: rash
+    weight: 0.8
+  - finding: nasal_congestion
+    weight: 0.4
+    note: Low weight - the fluid shift causes this too.
+  - finding: eye_watering
+    weight: 0.4
+  - finding: lip_or_tongue_swelling
+    weight: 1.0
+    note: Swelling of the lips or tongue means it may be becoming anaphylaxis - red flag.
+  - finding: throat_tightness
+    weight: 0.8
+  - finding: wheezing
+    weight: 0.6
+  - finding: shortness_of_breath
+    weight: 0.4
+  - finding: fever
+    weight: -1.0
+  - finding: congestion_since_arrival
+    weight: -0.8
+
+red_flags: [lip_or_tongue_swelling, throat_tightness, wheezing, shortness_of_breath]
+
+recommend:
+  - Stop the new medicine or move away from the substance if you can identify it.
+  - Use the antihistamine in the medical kit as directed by the flight surgeon.
+  - Have a crewmate stay with you and watch your breathing for the next hour.
+  - Know where the epinephrine (EpiPen) is in the kit. If the lips, tongue or throat swell or breathing gets hard, it is anaphylaxis - use it and call ground medical.
+  - Log the medicine or substance so it is never given to you again.
+
+differential: [anaphylaxis, skin_rash, sinonasal_congestion]
+
+sources:
+  - title: "Allergic Reaction (mild to moderate) - NASA Integrated Medical Model CliFF Baseline (2020)"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/allergic-reaction-mild-to-moderate-cliff.pdf"
+    note: 0.57 events per person-year in flight; most common cause on orbit is medication; immune dysregulation in flight.

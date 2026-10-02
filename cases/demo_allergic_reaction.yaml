@@ -1,0 +1,15 @@
+title: "FD 12 - hives after a new medicine, breathing fine"
+narrative: >
+  Took a new medication an hour ago. Hives on both arms, itchy, sneezing.
+  No lip or tongue swelling, throat is fine, no wheezing.
+expect_top: allergic_reaction
+observations:
+  hives: true
+  itching: true
+  sneezing: true
+  new_medication_or_exposure: true
+  lip_or_tongue_swelling: false
+  throat_tightness: false
+  wheezing: false
+  shortness_of_breath: false
+  mission_elapsed_days: 12

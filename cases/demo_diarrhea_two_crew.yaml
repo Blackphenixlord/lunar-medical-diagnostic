@@ -1,0 +1,14 @@
+title: "FD 33 - diarrhea and cramps, a second crewmember sick too"
+narrative: >
+  Diarrhea since last night with cramps and nausea. Another crewmember has the
+  same thing. No blood, still urinating normally.
+expect_top: diarrhea_gastroenteritis
+observations:
+  diarrhea: true
+  abdominal_cramping: true
+  nausea: true
+  others_affected: true
+  blood_in_stool: false
+  urine_output_low: false
+  abdominal_pain_rlq: false
+  mission_elapsed_days: 33

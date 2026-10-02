@@ -1,0 +1,13 @@
+title: "FD 40 - debris in the eye while opening a stowage bag"
+narrative: >
+  Something floated into my eye when I opened a bag. It feels gritty, it is
+  red and watering, and light hurts. I can see fine. No chemicals involved.
+expect_top: eye_foreign_body
+observations:
+  eye_foreign_body_sensation: true
+  eye_redness: true
+  eye_watering: true
+  light_sensitivity: true
+  vision_loss_sudden: false
+  chemical_in_eye: false
+  mission_elapsed_days: 40

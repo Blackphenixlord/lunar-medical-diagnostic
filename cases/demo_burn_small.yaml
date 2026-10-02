@@ -1,0 +1,13 @@
+title: "FD 60 - small blistering burn on the forearm"
+narrative: >
+  Burned my forearm on a hot surface during a payload swap. Red and blistering,
+  smaller than my palm, not on my face, no smoke.
+expect_top: burn
+observations:
+  burn_injury: true
+  blistering: true
+  burn_large_area: false
+  burn_face_or_airway: false
+  open_wound: false
+  chemical_exposure: false
+  mission_elapsed_days: 60

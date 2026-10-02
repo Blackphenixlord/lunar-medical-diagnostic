@@ -14,7 +14,8 @@
       "type": "string",
       "enum": ["neuro_ocular", "renal", "vestibular", "musculoskeletal",
                "cardiovascular", "infectious", "dermatologic", "sleep",
-               "respiratory", "psychological", "environmental", "trauma"]
+               "respiratory", "psychological", "environmental", "trauma",
+               "gastrointestinal", "immunologic"]
     },
     "urgency": {
       "type": "string",

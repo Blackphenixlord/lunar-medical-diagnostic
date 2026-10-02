@@ -1,0 +1,66 @@
+id: eye_foreign_body
+name: Eye Foreign Body or Corneal Abrasion
+aka: [something in my eye, scratched eye, corneal abrasion, eye irritation]
+category: trauma
+urgency: monitor
+# NASA IMM baseline (2020): 2.33 events per person-year in flight (106 / 45.49).
+# That is ~69% chance per 6-month mission - one of the most common things that
+# happens to anyone on orbit. Prior kept in the same calibrated range as the
+# rest of the KB until Joaquin signs off on moving priors to IMM numbers.
+prior: 0.15
+
+description: >
+  A speck of debris, lint or metal in the eye, or a scratch on the clear front
+  surface (cornea). Gritty pain, redness, watering, light hurts. Usually
+  minor and heals in a day or two, but it can scar the cornea if missed.
+
+microgravity_note: >
+  On Earth dust falls to the floor. On orbit it does not fall at all - lint,
+  hair, food crumbs and metal shavings float at head height until a filter
+  catches them. NASA counts eye foreign bodies and abrasions as one of the
+  most frequent in-flight medical events: foreign bodies were 88.5% of the
+  eye events reviewed, and most were particles floating in cabin air.
+  Rinsing an eye is also harder - water does not run off, it forms a ball
+  that clings to the eye, so the ISS kit uses a dedicated eyewash setup.
+
+findings:
+  - finding: eye_foreign_body_sensation
+    weight: 2.6
+    absent_weight: -1.5
+    note: The single most specific complaint - "there is something in my eye".
+  - finding: eye_pain
+    weight: 1.6
+    absent_weight: -1.0
+  - finding: eye_redness
+    weight: 1.2
+  - finding: eye_watering
+    weight: 1.0
+  - finding: light_sensitivity
+    weight: 0.8
+    note: Common with a scratched cornea; also a warning sign for a corneal ulcer.
+  - finding: chemical_in_eye
+    weight: 1.0
+    note: Same first aid (flush) but a chemical burn is far more dangerous - red flag.
+  - finding: vision_loss_sudden
+    weight: 0.4
+    note: Small weight. A real loss of vision is not a speck in the eye - it is a red flag.
+  - finding: headache
+    weight: -0.4
+
+red_flags: [vision_loss_sudden, chemical_in_eye]
+
+recommend:
+  - Do not rub the eye. Rubbing drags the particle across the cornea.
+  - Flush the eye with the onboard eyewash; on orbit the water clings to the eye, so use the kit setup rather than a cupped hand.
+  - Examine with a light and fluorescein stain from the medical kit to look for a scratch or an embedded particle.
+  - Contact ground medical if vision is reduced, a particle stays stuck, a chemical got in, or pain is not better within 24 hours.
+  - Wear eye protection for any task that makes debris (drilling, cutting, opening bags of loose material).
+
+differential: [sans, allergic_reaction, toxic_inhalation]
+
+sources:
+  - title: "Eye Irritation/Abrasion - NASA Integrated Medical Model CliFF Baseline (2020)"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/eye-irritation-abrasion-cliff.pdf"
+    note: 2.33 events per person-year in flight; foreign bodies 88.5% of events; particulates float freely in microgravity.
+  - title: "Eye Chemical Burn - NASA Integrated Medical Model CliFF Baseline"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/eye-chemical-burn-cliff.pdf"

@@ -1,0 +1,57 @@
+id: burn
+name: Burn
+aka: [burned, scald, thermal burn]
+category: trauma
+urgency: monitor
+# NASA IMM baseline (2020): 0.00504 per person-year from fire (ISS PRA fire model).
+# Small burns from hot equipment and water are not counted there; prior set higher.
+prior: 0.01
+
+description: >
+  Skin damaged by heat, a hot surface, hot water or fire. Small first- and
+  second-degree burns (red, painful, maybe blisters) are treated on board. A
+  large burn, a burn on the face, or breathing in smoke or hot air is serious.
+
+microgravity_note: >
+  No burns have been reported in the US space program, but crews on Mir were
+  burned, and eight fires have been documented on spacecraft. In
+  microgravity, flames do not rise - they form slow, hot balls that are hard
+  to see and spread along surfaces. Smoke fills the cabin fast. Cooling a burn
+  is also harder: running water does not run, so wet cloths or cold packs are
+  used. NASA notes the ISS kit only carries enough IV fluid for a large burn
+  for about a day, so any big burn is an evacuation question.
+
+findings:
+  - finding: burn_injury
+    weight: 3.5
+    absent_weight: -3.0
+    required: true
+    note: No burn, no burn rule.
+  - finding: blistering
+    weight: 1.0
+    note: Blisters mean a second-degree burn.
+  - finding: burn_large_area
+    weight: 0.8
+  - finding: burn_face_or_airway
+    weight: 0.8
+  - finding: chemical_exposure
+    weight: 0.4
+    note: A fire means smoke - check for inhalation too.
+  - finding: open_wound
+    weight: -0.6
+
+red_flags: [burn_large_area, burn_face_or_airway]
+
+recommend:
+  - Cool the burn for 20 minutes with cool, wet cloths or cold packs - water will not run off on orbit.
+  - Do not pop blisters. Cover with the burn dressing from the medical kit.
+  - Remove rings, watches or tight clothing near the burn before it swells.
+  - Escalate now if the burn is bigger than your palm, on the face, hands, feet or groin, or if your voice is hoarse or you breathed in smoke.
+  - Photograph the burn and send it to ground medical.
+
+differential: [skin_rash, wound_laceration, toxic_inhalation]
+
+sources:
+  - title: "Burns secondary to Fire - NASA Integrated Medical Model CliFF Baseline (2020)"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/burns-secondary-to-fire-cliff.pdf"
+    note: 0.00504 per person-year; no US burns but burns on Mir; eight onboard combustions documented; IV fluid limits for large burns.

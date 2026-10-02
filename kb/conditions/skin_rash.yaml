@@ -1,0 +1,63 @@
+id: skin_rash
+name: Skin Rash (contact, friction or moisture)
+aka: [rash, dermatitis, skin irritation, chafing]
+category: dermatologic
+urgency: routine
+# NASA IMM baseline (2020): 2.64 events per person-year in flight (120 / 45.49).
+# Crucian 2016: 1.12 rashes per flight-year on ISS, ~25x the terrestrial rate.
+prior: 0.15
+
+description: >
+  Red, itchy or irritated skin, most often where clothing, straps or a
+  garment rubs, or where sweat stays on the skin. Usually clears in a few days.
+
+microgravity_note: >
+  Rashes are the most common immune-type complaint on the ISS - Crucian et
+  al. measured roughly 25 times the rate seen on Earth. Sweat does not drip
+  off in microgravity; it pools on the skin and soaks into clothing that is
+  changed less often than on Earth. Cabin air is dry, the immune system is
+  dysregulated in flight, and crew wear absorbent garments and harnesses for
+  long periods. NASA lists low humidity, retained sweat and moisture,
+  prolonged absorbent-garment use and equipment friction as causes.
+
+findings:
+  - finding: rash
+    weight: 3.0
+    absent_weight: -3.0
+  - finding: itching
+    weight: 1.2
+  - finding: rash_where_skin_rubs
+    weight: 1.6
+    note: Where it is tells you most - friction and moisture rashes sit under straps and garments.
+  - finding: rash_spreading
+    weight: 0.6
+  - finding: hives
+    weight: 0.6
+    note: Hives point more to an allergy; small weight here.
+  - finding: blistering
+    weight: 0.4
+  - finding: fever
+    weight: 0.6
+    note: A rash with fever is not a simple skin irritation - red flag.
+  - finding: recent_decompression
+    weight: -1.5
+    note: A blotchy, marbled skin change after an EVA is decompression sickness until proven otherwise.
+
+red_flags: [fever]
+
+recommend:
+  - Keep the area clean and dry, and change into fresh clothing or garments.
+  - Use the barrier cream or hydrocortisone cream in the medical kit as directed.
+  - Photograph the rash daily from the same distance so ground medical can see whether it is spreading.
+  - Contact ground medical if the rash spreads quickly, blisters, comes with fever, or does not improve in 3 days.
+  - If the skin looks blotchy or marbled after an EVA, treat it as possible decompression sickness instead.
+
+differential: [allergic_reaction, decompression_sickness, burn]
+
+sources:
+  - title: "Skin Rash - NASA Integrated Medical Model CliFF Baseline (2020)"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/skin-rash-cliff.pdf"
+    note: 2.64 events per person-year in flight; causes include low humidity, retained sweat and garment friction.
+  - title: "Incidence of clinical symptoms during long-duration orbital spaceflight - Crucian et al., IJGM 2016"
+    url: "https://www.dovepress.com/incidence-of-clinical-symptoms-during-long-duration-orbital-spacefligh-peer-reviewed-fulltext-article-IJGM"
+    note: Skin rash 1.12 per flight-year on ISS, about 25 times the terrestrial rate.

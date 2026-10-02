@@ -1,0 +1,18 @@
+title: "FD 120 - crushing chest pain on the treadmill (must escalate)"
+narrative: >
+  Crushing chest pain that started on the treadmill and goes down my left arm.
+  Cold sweat, short of breath. Not sharper on breathing, not sore to press.
+  No neck swelling.
+expect_top: acute_coronary_syndrome
+expect_escalate: true
+observations:
+  chest_pain: true
+  pain_radiates_arm_jaw: true
+  chest_pain_on_exertion: true
+  cold_sweat: true
+  shortness_of_breath: true
+  pain_worse_on_breathing: false
+  chest_tender_to_touch: false
+  neck_swelling: false
+  fever: 36.8
+  mission_elapsed_days: 120

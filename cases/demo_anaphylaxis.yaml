@@ -1,0 +1,15 @@
+title: "FD 12 - throat tightening and lip swelling after an antibiotic (must escalate)"
+narrative: >
+  Took a new antibiotic. Throat feels tight, lips swelling, wheezing,
+  hives, feel faint.
+expect_top: anaphylaxis
+expect_escalate: true
+observations:
+  throat_tightness: true
+  lip_or_tongue_swelling: true
+  wheezing: true
+  hives: true
+  presyncope: true
+  new_medication_or_exposure: true
+  fever: 36.8
+  mission_elapsed_days: 12

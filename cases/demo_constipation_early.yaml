@@ -1,0 +1,12 @@
+title: "FD 3 - no bowel movement since launch, bloated"
+narrative: >
+  Have not been able to have a bowel movement since we got here. Bloated.
+  Not vomiting, no fever.
+expect_top: constipation_adaptation
+observations:
+  no_bowel_movement: true
+  bloating: true
+  diarrhea: false
+  vomiting: false
+  fever: 36.7
+  mission_elapsed_days: 3

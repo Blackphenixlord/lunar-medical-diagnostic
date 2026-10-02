@@ -112,8 +112,10 @@ follow from it:
    flight surgeon about a laceration when nobody has established there is a
    wound.
 
-Only two rules use it today: `wound_laceration` (open_wound) and
-`decompression_sickness` (recent_decompression). Both are physics, not judgement.
+Five rules use it today: `wound_laceration` (open_wound),
+`decompression_sickness` (recent_decompression), `head_injury` (head_strike),
+`burn` (burn_injury) and `toxic_inhalation` (chemical_exposure). All physics,
+not judgement.
 
 ---
 

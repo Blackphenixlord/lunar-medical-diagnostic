@@ -1,0 +1,17 @@
+title: "FD 80 - belly button pain moving to the lower right, fever (must escalate)"
+narrative: >
+  Pain started around my belly button and moved to the lower right. No appetite,
+  worse when I cough, temperature 38.2. No blood in the urine, not in waves.
+expect_top: appendicitis
+expect_escalate: true
+observations:
+  abdominal_pain_rlq: true
+  pain_moved_to_rlq: true
+  loss_of_appetite: true
+  pain_worse_on_movement: true
+  fever: 38.2
+  nausea: true
+  hematuria: false
+  pain_colicky: false
+  diarrhea: false
+  mission_elapsed_days: 80

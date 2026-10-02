@@ -166,3 +166,37 @@ def test_spoken_pain_scores_attach_to_the_pain(kb, ex):
 def test_a_duration_is_not_a_pain_score(kb, ex):
     obs = ex.extract("my back hurts, it's been a 2 hour thing", kb)
     assert obs.get("back_pain") is True
+
+
+# --- general conditions (added 2 Oct 2026): the overlaps that bit us ---------
+
+def test_days_are_not_diopters(kb, ex):
+    """"rash for 3 days" was read as a 3-diopter eye shift and pulled SANS in."""
+    obs = ex.extract("itchy rash under my straps for 3 days", kb)
+    assert obs.get("hyperopic_shift") is None
+    assert obs.get("rash") is True
+
+
+def test_burning_urine_is_not_a_burn(kb, ex):
+    obs = ex.extract("it burns when I pee", kb)
+    assert obs.get("dysuria") is True
+    assert obs.get("burn_injury") is None
+
+
+def test_burning_throat_is_not_a_burn(kb, ex):
+    obs = ex.extract("there was an ammonia smell and now my throat burns", kb)
+    assert obs.get("chemical_exposure") is True
+    assert obs.get("throat_burning") is True
+    assert obs.get("burn_injury") is None
+
+
+def test_debris_in_the_eye(kb, ex):
+    obs = ex.extract("Something flew into my eye in the rack and it's watering and stinging", kb)
+    assert obs.get("eye_foreign_body_sensation") is True
+    assert obs.get("eye_watering") is True
+    assert obs.get("eye_pain") is True
+
+
+def test_lower_right_of_my_belly(kb, ex):
+    obs = ex.extract("pain moved to the lower right of my belly", kb)
+    assert obs.get("abdominal_pain_rlq") is True

@@ -1,0 +1,63 @@
+id: urinary_tract_infection
+name: Urinary Tract Infection
+aka: [UTI, bladder infection, cystitis]
+category: infectious
+urgency: monitor
+# NASA IMM baseline (2020): 0.264 per person-year (12 / 45.49);
+# female 0.856, male 0.134 per person-year.
+prior: 0.05
+
+description: >
+  Bacterial infection of the bladder. Burning when urinating, needing to go
+  often and urgently, pressure low in the belly. If it reaches the kidney it
+  causes fever and flank pain and becomes serious.
+
+microgravity_note: >
+  Crew drink less than they should, body fluid shifts change how much urine
+  is made, and mission schedules make people hold urine longer. Some motion
+  sickness medicines cause urinary retention. All of these let bacteria sit
+  in the bladder. NASA's in-flight data show UTIs are about six times more
+  common in female crew than male. A UTI and a kidney stone can look alike
+  in space and both cause blood in the urine - the dipstick and an
+  ultrasound are what tell them apart.
+
+findings:
+  - finding: dysuria
+    weight: 2.4
+    absent_weight: -1.5
+    note: Burning on urination is the core symptom.
+  - finding: urinary_frequency
+    weight: 1.8
+  - finding: urinary_urgency
+    weight: 1.6
+  - finding: suprapubic_pain
+    weight: 1.4
+  - finding: hematuria
+    weight: 0.8
+  - finding: fever
+    weight: 0.8
+    note: Fever means the infection may have reached the kidney - red flag.
+  - finding: flank_pain
+    weight: 0.4
+    note: Flank pain plus fever is a kidney infection. Small weight, red flag.
+  - finding: pain_colicky
+    weight: -1.2
+    note: Pain in waves points to a stone, not an infection.
+  - finding: pain_radiates_groin
+    weight: -0.6
+
+red_flags: [fever, flank_pain]
+
+recommend:
+  - Test the urine with the onboard dipstick (leukocytes, nitrites, blood).
+  - Drink fluids steadily and do not hold urine.
+  - Contact ground medical before starting any antibiotic - the flight surgeon chooses it from the kit.
+  - Escalate now for fever, flank pain, shaking chills or vomiting - that suggests a kidney infection.
+  - If the pain comes in waves or spreads to the groin, think kidney stone and do a renal ultrasound.
+
+differential: [renal_stone]
+
+sources:
+  - title: "Urinary Tract Infection - NASA Integrated Medical Model CliFF Baseline (2020)"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/urinary-tract-infection-cliff.pdf"
+    note: 0.264 per person-year in flight; female 6.4x male; fluid intake, fluid shifts and retention-causing medications as factors.

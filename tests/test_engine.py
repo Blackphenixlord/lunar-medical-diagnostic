@@ -180,6 +180,12 @@ def test_demo_cases(path, kb):
     assert r.top.id == raw["expect_top"], (
         f"{os.path.basename(path)}: expected {raw['expect_top']}, got {r.top.id}"
     )
+    # Optional: a case can also pin whether it must (or must not) alarm.
+    if "expect_escalate" in raw:
+        assert r.escalate == raw["expect_escalate"], (
+            f"{os.path.basename(path)}: expected escalate={raw['expect_escalate']}, "
+            f"got {r.escalate} ({r.escalation_reasons})"
+        )
 
 
 def test_low_measurement_still_carries_weight(kb):

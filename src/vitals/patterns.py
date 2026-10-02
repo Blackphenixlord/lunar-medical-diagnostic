@@ -148,6 +148,110 @@ SYMPTOM_PATTERNS: dict[str, list[str]] = {
     "tetanus_status_unknown":    [r"(don'?t know|not sure|can'?t remember).{0,25}tetanus",
                                   r"tetanus.{0,25}(out of date|expired|years ago)"],
 
+    # --- added 2 Oct 2026: general conditions (eye, skin, urinary, gut, allergy,
+    # heart, head injury, burns, toxic air). Watch the overlaps: "burns when I
+    # pee" is dysuria and "my throat burns" is toxic air, so burn_injury only
+    # matches a burn ON the body, never the bare word "burn".
+
+    # eye
+    "eye_pain":                  [r"\beyes? (hurts?|stings?|burns?|is (sore|killing|burning|stinging))",
+                                  r"pain in (my|the) eye", r"\bsore eye",
+                                  r"\beyes?\b.{0,60}\b(stinging|burning|hurting)\b"],
+    "eye_redness":               [r"(red|bloodshot) eyes?", r"\beyes?\b.{0,30}\b(red|bloodshot)\b"],
+    "eye_foreign_body_sensation": [r"(something|speck|grit|dust|debris|lint|eyelash|particle|crumb|shaving|flake|piece of \w+).{0,25}in(to)? (my|the) eye",
+                                  r"\bgritty", r"eye feels scratch", r"scratchy eye"],
+    "eye_watering":              [r"\beyes?\b.{0,60}\b(watering|tearing)",
+                                  r"watery eyes?", r"tearing (up|non ?stop)"],
+    "light_sensitivity":         [r"light (hurts|bothers)", r"sensitive to (the )?light", r"photophobi",
+                                  r"can'?t (stand|handle|look at) (the )?light"],
+    "vision_loss_sudden":        [r"(lost|losing) (my |the |part of my )?(vision|sight)",
+                                  r"can'?t see (out of|anything)", r"(vision|eye) went (dark|black|grey|gray)",
+                                  r"curtain (over|across)"],
+    "chemical_in_eye":           [r"(chemical|cleaner|cleaning (fluid|agent|wipe)|ammonia|glycol|solution|disinfectant).{0,25}(in|into) (my|the) eyes?",
+                                  r"splash\w*.{0,25}eye"],
+
+    # skin
+    "rash":                      [r"\brash", r"red (bumps|spots|patch)", r"\bchaf", r"skin.{0,15}irritat"],
+    "itching":                   [r"\bitch"],
+    "rash_spreading":            [r"(rash|spots|bumps).{0,20}(spreading|getting bigger|spread)"],
+    "rash_where_skin_rubs":      [r"(under|where) (the |my )?(straps?|harness|waistband|belt|garment|mag|socks?|shorts|shirt|collar)",
+                                  r"(straps?|harness|garment|waistband|clothes|clothing|shirt|shorts|collar).{0,20}rubs?",
+                                  r"sweat\w*.{0,20}(stays|sits|pools)"],
+    "blistering":                [r"\bblister"],
+
+    # urinary
+    "urinary_frequency":         [r"(pee|peeing|urinat\w*).{0,20}(all the time|constantly|every \w+ minutes|so often|more often|nonstop)",
+                                  r"keeps? having to (pee|urinate|go)", r"frequent urination"],
+    "urinary_urgency":           [r"(sudden|urgent|really bad|strong) (urge|need) to (pee|urinate|go)",
+                                  r"can'?t hold (it|my (pee|urine))", r"\burgency\b"],
+    "suprapubic_pain":           [r"(low|lower|bottom of my) (belly|stomach|abdomen|tummy).{0,20}(pain|pressure|hurts?|ache)",
+                                  r"(pain|pressure).{0,20}(above|over) (my )?(pubic|bladder)", r"bladder (pain|pressure|hurts)",
+                                  r"(pain|pressure|ache) low in (my|the) (belly|stomach|abdomen|tummy)"],
+
+    # gut
+    "diarrhea":                  [r"diarr", r"\bthe runs\b", r"(loose|watery|liquid) (stool|poo|bowel)",
+                                  r"(stool|poo|poop)s? (are|is) (loose|watery|liquid)"],
+    "abdominal_cramping":        [r"(stomach|belly|abdominal|gut|tummy) cramp", r"cramp\w*.{0,15}(stomach|belly|gut)",
+                                  r"\bcramping"],
+    "blood_in_stool":            [r"blood.{0,20}(stool|poo|bowel movement)", r"(black|tarry|bloody) (stool|poo)"],
+    "no_bowel_movement":         [r"constipat", r"no bowel movement",
+                                  r"(haven'?t|have not|can'?t|cannot|couldn'?t|unable to)( been able to)?( really)? (poop|pooped|go number two|have a bowel movement|had a bowel movement)",
+                                  r"(stool|poop)s? (are|is) (hard|like rocks)", r"(hard|painful) to (poop|go number two)"],
+    "bloating":                  [r"\bbloat", r"(full of|lots of) gas", r"\bgassy"],
+    "abdominal_pain_rlq":        [r"(lower right|right lower) (part of (my|the) )?(belly|stomach|abdomen|tummy|quadrant)",
+                                  r"(belly|stomach|abdomen|tummy).{0,25}(lower right|bottom right)",
+                                  r"(lower|bottom) right (side )?of (my|the) (belly|stomach|abdomen|tummy)", r"\brlq\b"],
+    "pain_moved_to_rlq":         [r"(started|began).{0,30}(belly ?button|navel|middle of my (belly|stomach)).{0,50}(moved|shifted|went|now)",
+                                  r"(moved|shifted|migrated).{0,30}(lower right|bottom right)"],
+    "loss_of_appetite":          [r"(no|lost my|lost|zero|don'?t have an?) appetite", r"(not|don'?t feel like) (hungry|eating)"],
+    "pain_worse_on_movement":    [r"(worse|hurts|kills).{0,25}(when|if) i (cough|move|twist|bump|laugh|sneeze)",
+                                  r"(coughing|bumping|moving|any jolt)\w*.{0,20}(makes it worse|hurts more|kills)"],
+    "others_affected":           [r"(crewmates?|crew ?members?|the commander|everyone|others|two of us|both of us|three of us)\b.{0,30}(also|too|same|as well|sick|symptoms)",
+                                  r"(also|same).{0,15}(crewmate|crew ?member|commander)"],
+
+    # allergy
+    "hives":                     [r"\bhives", r"\bwelts", r"raised (itchy )?(bumps|welts)"],
+    "sneezing":                  [r"sneez"],
+    "lip_or_tongue_swelling":    [r"(lip|lips|tongue|mouth).{0,15}(swell|swollen|puff)", r"swell\w*.{0,15}(lip|tongue)"],
+    "throat_tightness":          [r"throat.{0,20}(tight|closing|swelling|swollen)", r"(hard|trouble) (to )?swallow",
+                                  r"can'?t swallow"],
+    "wheezing":                  [r"wheez", r"whistl\w* when i breathe"],
+    "new_medication_or_exposure": [r"(took|taken|taking|started|after|since) (a |an |the |my |that )?(new )?(med|meds|medication|medicine|pill|tablet|antibiotic|vaccine|shot|injection)",
+                                  r"new (med|medication|medicine|food|soap|cream|lotion|wipes)",
+                                  r"(ate|eating|tried) (something )?new"],
+
+    # heart
+    "pain_radiates_arm_jaw":     [r"(to|into|down|up) (my )?(left |right )?(arm|jaw)\b", r"(arm|jaw).{0,15}(also|too) (hurts|aches)"],
+    "chest_pain_on_exertion":    [r"chest.{0,40}(during|while|when) (i was |i'?m )?(exercis|on the (treadmill|ared|bike)|working out|running|lifting)",
+                                  r"(during|after|on) (exercise|my workout|the treadmill|ared|the bike).{0,30}chest"],
+    "palpitations":              [r"palpitat", r"heart.{0,15}(racing|pounding|skipping|fluttering|irregular)"],
+    "pain_worse_on_breathing":   [r"(hurts|worse|sharp|pain).{0,25}(deep breath|breathe in|breathing in|when i breathe)",
+                                  r"pleuritic"],
+    "chest_tender_to_touch":     [r"(press|push)\w*.{0,25}(hurts|sore|tender|pain)", r"tender to (the )?touch"],
+
+    # head injury
+    "head_strike":               [r"(hit|bumped|banged|smacked|whacked|cracked|knocked|slammed) my head",
+                                  r"head.{0,20}(hit|into|against) (the |a )?(hatch|rack|wall|panel|bulkhead|handrail|structure|corner)",
+                                  r"hit in the head", r"(took|got) a (blow|knock|hit) to the head"],
+    "loss_of_consciousness":     [r"(knocked|blacked|passed) out", r"\bblack out", r"lost consciousness",
+                                  r"was out (for|cold)"],
+    "memory_gap":                [r"(can'?t|don'?t|cannot) remember (what happened|hitting|how i|the hit)",
+                                  r"memory.{0,10}(gap|blank|fuzzy)", r"(blank|gap) in my memory"],
+
+    # burns
+    "burn_injury":               [r"burn(ed|t) (my|myself)", r"\bscald", r"(got|have) a burn", r"burn on (my|the)",
+                                  r"(touched|grabbed|brushed) (a |the |something )?(hot|heater|soldering)",
+                                  r"soldering iron"],
+    "burn_large_area":           [r"bigger than (my )?(palm|hand)", r"large (area|burn)"],
+    "burn_face_or_airway":       [r"burn\w*.{0,20}(face|lips|eyebrow)", r"(face|lips|eyebrows).{0,20}(burn|singed)",
+                                  r"\bhoarse", r"\bsinged"],
+
+    # toxic air
+    "chemical_exposure":         [r"\bsmoke\b", r"\bfumes?\b", r"(chemical|ammonia|burning|weird|strange|acrid|plastic) (smell|odou?r)",
+                                  r"\bammonia", r"\bleak(ed|ing)?\b", r"(air quality|smoke|fire|toxic|atmosphere) alarm",
+                                  r"\bglycol", r"\bfire\b", r"off-?gass"],
+    "throat_burning":            [r"(nose|throat).{0,15}(burns?|burning|stings?|stinging|raw)", r"burning (in my )?(nose|throat)"],
+
     # general
     "fatigue":                   [r"\btired", r"exhausted", r"\bfatigue", r"no energy", r"wiped out"],
 
@@ -164,7 +268,8 @@ NUMERIC_PATTERNS: dict[str, str] = {
     "sleep_hours":          r"(\d(?:\.\d)?)\s*(?:hours?|hrs?|h)\s*(?:of\s*)?sleep"
                             r"|sleeping\s*(?:about\s*)?(\d(?:\.\d)?)",
     "hr_elevated":          r"(?:heart rate|hr|pulse)\D{0,10}(\d{2,3})",
-    "hyperopic_shift":      r"(\d(?:\.\d+)?)\s*(?:d|diopt)",
+    # "d\b", not "d": "rash for 3 days" was being read as a 3-diopter shift.
+    "hyperopic_shift":      r"(\d(?:\.\d+)?)\s*(?:d\b|diopt)",
 }
 
 # "8 out of 10", "8/10". Attached to whichever pain finding is already present.

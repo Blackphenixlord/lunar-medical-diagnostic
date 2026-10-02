@@ -1,0 +1,61 @@
+id: anaphylaxis
+name: Anaphylaxis
+aka: [severe allergic reaction, anaphylactic shock]
+category: immunologic
+urgency: emergency
+# NASA IMM baseline (2020): 0.000491 per person-year (terrestrial rate, age 40-49).
+# Floored at 0.003 so the backup engine can still surface it.
+prior: 0.003
+
+description: >
+  A severe, whole-body allergic reaction. Throat tightness, swelling of the
+  lips or tongue, wheezing or trouble breathing, hives, and feeling faint as
+  blood pressure drops. Can kill within minutes. Epinephrine is the treatment.
+
+microgravity_note: >
+  NASA calls an anaphylactic reaction in space a significant medical
+  emergency. Likely triggers on orbit are medicines and the tracers or
+  markers used in experiments. Immune dysregulation in flight may raise the
+  risk. Low blood pressure looks different in microgravity - there is no
+  gravity pulling blood to the legs, so a crewmember may not faint the way
+  they would on Earth, and the usual "feels faint when standing" warning is
+  missing. The ISS kits carry what is needed to treat it.
+
+findings:
+  - finding: throat_tightness
+    weight: 2.4
+  - finding: lip_or_tongue_swelling
+    weight: 2.2
+  - finding: wheezing
+    weight: 1.8
+  - finding: shortness_of_breath
+    weight: 1.4
+  - finding: hives
+    weight: 1.6
+  - finding: new_medication_or_exposure
+    weight: 1.6
+  - finding: presyncope
+    weight: 1.4
+  - finding: vomiting
+    weight: 0.4
+  - finding: fever
+    weight: -1.2
+  - finding: chemical_exposure
+    weight: -1.0
+    note: Breathing trouble after smoke or fumes is toxic inhalation, not allergy.
+
+red_flags: [throat_tightness, lip_or_tongue_swelling, wheezing, shortness_of_breath, presyncope]
+
+recommend:
+  - Use the epinephrine auto-injector (EpiPen) from the medical kit in the outer thigh NOW. Do not wait to be sure.
+  - Call ground medical immediately and alert the whole crew.
+  - Give oxygen from the medical kit if breathing is hard.
+  - Stay restrained and lying flat if you feel faint; a second dose may be needed in 5 to 15 minutes if there is no improvement.
+  - Stop and remove whatever caused it, and log it so it is never given again.
+
+differential: [allergic_reaction, toxic_inhalation]
+
+sources:
+  - title: "Anaphylaxis - NASA Integrated Medical Model CliFF Baseline (2020)"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/anaphylaxis-cliff.pdf"
+    note: Significant medical emergency in space; triggers include onboard medications and experimental tracers; hypotension presents differently in microgravity.

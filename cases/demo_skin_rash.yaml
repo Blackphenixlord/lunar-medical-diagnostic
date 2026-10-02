@@ -1,0 +1,13 @@
+title: "FD 55 - itchy rash under the harness straps"
+narrative: >
+  Itchy red rash where the treadmill harness straps sit. Three days now.
+  Not spreading, no fever, no EVA recently.
+expect_top: skin_rash
+observations:
+  rash: true
+  itching: true
+  rash_where_skin_rubs: true
+  rash_spreading: false
+  fever: 36.8
+  recent_decompression: false
+  mission_elapsed_days: 55

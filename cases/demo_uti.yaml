@@ -1,0 +1,14 @@
+title: "FD 70 - burning urination and frequency, no fever"
+narrative: >
+  It burns when I urinate and I have to go every twenty minutes, with pressure
+  low in my belly. No fever, no side pain, the pain does not come in waves.
+expect_top: urinary_tract_infection
+observations:
+  dysuria: true
+  urinary_frequency: true
+  urinary_urgency: true
+  suprapubic_pain: true
+  fever: 36.9
+  flank_pain: false
+  pain_colicky: false
+  mission_elapsed_days: 70

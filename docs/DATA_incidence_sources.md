@@ -80,15 +80,36 @@ adaptation conditions only apply in the first days of flight (the rules already 
 with `mission_elapsed_days`). Changing priors will shift the engine's ranking — re-run
 `pytest` and `vitals bench` after any change, and have Joaquin sign off.
 
-## Still missing — rules we do not have (from the benchmark "nothing fits" cases)
+## General conditions added 2 Oct 2026
 
-NASA has baselines for these too; they are the next rules to consider:
+Twelve rules added from NASA IMM baselines so VITALS covers ordinary medicine, not only
+space-adaptation conditions. Their `prior` values follow the same calibrated range as the rest
+of the KB (not yet switched to IMM numbers, same as above); the IMM figure is written in a
+comment at the top of each file. Rare emergencies are floored at 0.003-0.005 so the backup
+engine can still surface them - a missed heart attack costs more than a false alarm.
 
-- Eye foreign body / corneal abrasion (debris floats at head height in microgravity)
-- Burns
-- Skin rash — Crucian 2016: **1.12 rashes per flight-year, 25x the terrestrial rate** [13];
-  the most common immune complaint on ISS and we have no rule for it
-- Allergic reaction — NASA IMM baseline exists [27]
+| Condition (KB id) | `prior` used | Published number | Source |
+|---|---|---|---|
+| Eye foreign body / abrasion (`eye_foreign_body`) | 0.15 | **2.33 per person-year** in flight (106/45.49); foreign bodies 88.5% | IMM 2020 [28] |
+| Skin rash (`skin_rash`) | 0.15 | **2.64 per person-year** in flight (120/45.49); ISS ~25x terrestrial | IMM 2020 [29]; Crucian 2016 [13] |
+| Urinary tract infection (`urinary_tract_infection`) | 0.05 | **0.264 per person-year** (12/45.49); female 0.856, male 0.134 | IMM 2020 [30] |
+| Diarrhea (`diarrhea_gastroenteritis`) | 0.08 | **0.88 per person-year** in flight (40/45.49) | IMM 2020 [31] |
+| Constipation, space adaptation (`constipation_adaptation`) | 0.12 | **18.7% of crew** (151/807), first 5 days | IMM 2020 [32] |
+| Appendicitis (`appendicitis`) | 0.005 (floored) | **0.000934 per person-year** (Bayesian; no in-flight case) | IMM 2020 [33] |
+| Allergic reaction, mild-moderate (`allergic_reaction`) | 0.08 | **0.57 per person-year** in flight (26/45.49); most often a medicine | IMM 2020 [27] |
+| Anaphylaxis (`anaphylaxis`) | 0.003 (floored) | **0.000491 per person-year** (terrestrial, age 40-49) | IMM 2020 [34] |
+| Heart attack / angina (`acute_coronary_syndrome`) | 0.003 (floored) | **0.00063 male, 0.00047 female per person-year**; none in flight | IMM 2020 [35] |
+| Head injury (`head_injury`) | 0.005 (floored) | **0.00042 per person-year** (terrestrial trauma data) | IMM 2020 [36] |
+| Burn (`burn`) | 0.01 | **0.00504 per person-year** from fire; small contact burns not counted | IMM 2020 [37] |
+| Toxic / smoke inhalation (`toxic_inhalation`) | 0.02 | **0.354 toxic events per year**; smoke **0.018 per person-year** | IMM 2023 [38]; IMM 2020 [39] |
+
+## Still missing
+
+Deliberately left out: behavioural health (anxiety, depression - a scoring engine is the wrong
+tool) and radiation (dosimetry, not a symptom). Next candidates with NASA baselines: eye
+infection / corneal ulcer, chest injury, abdominal injury, atrial fibrillation, hypertension,
+nosebleed, sprains of the wrist, ankle and knee, and a chest-wall strain rule (the prompt bank
+has a mimic for it that currently, correctly, returns nothing).
 
 ## Sources
 
@@ -119,3 +140,15 @@ NASA has baselines for these too; they are the next rules to consider:
 25. NASA-STD-3001 Technical Brief, Shoulder Injury, 2025 — https://www.nasa.gov/wp-content/uploads/2025/09/ochmo-mtb-006-shoulder-injury.pdf
 26. Menon, Review of Spaceflight Dental Emergencies, NASA/TM-2012-217368 — https://humanresearchroadmap.nasa.gov/gaps/closureDocumentation/2-Menon-A_TM-2012-217368.pdf
 27. NASA, Allergic Reaction (mild to moderate) CliFF Baseline — https://www.nasa.gov/wp-content/uploads/2026/08/allergic-reaction-mild-to-moderate-cliff.pdf
+28. NASA, Eye Irritation/Abrasion CliFF Baseline, 2020 — https://www.nasa.gov/wp-content/uploads/2026/08/eye-irritation-abrasion-cliff.pdf
+29. NASA, Skin Rash CliFF Baseline, 2020 — https://www.nasa.gov/wp-content/uploads/2026/08/skin-rash-cliff.pdf
+30. NASA, Urinary Tract Infection CliFF Baseline, 2020 — https://www.nasa.gov/wp-content/uploads/2026/08/urinary-tract-infection-cliff.pdf
+31. NASA, Diarrhea CliFF Baseline, 2020 — https://www.nasa.gov/wp-content/uploads/2026/08/diarrhea-cliff.pdf
+32. NASA, Constipation (space adaptation) CliFF Baseline, 2020 — https://www.nasa.gov/wp-content/uploads/2026/08/constipation-space-adaptation-cliff.pdf
+33. NASA, Appendicitis CliFF Baseline, 2020 — https://www.nasa.gov/wp-content/uploads/2026/08/appendicitis-cliff.pdf
+34. NASA, Anaphylaxis CliFF Baseline, 2020 — https://www.nasa.gov/wp-content/uploads/2026/08/anaphylaxis-cliff.pdf
+35. NASA, Angina/Myocardial Infarction CliFF Baseline, 2020 — https://www.nasa.gov/wp-content/uploads/2026/08/angina-myocardial-infarction-cliff.pdf
+36. NASA, Head Injury CliFF Baseline, 2020 — https://www.nasa.gov/wp-content/uploads/2026/08/head-injury-cliff.pdf
+37. NASA, Burns secondary to Fire CliFF Baseline, 2020 — https://www.nasa.gov/wp-content/uploads/2026/08/burns-secondary-to-fire-cliff.pdf
+38. NASA, Toxic Inhalation Exposure CliFF Baseline, 2023 — https://www.nasa.gov/wp-content/uploads/2026/08/toxic-inhalation-exposure-cliff-2023.pdf
+39. NASA, Smoke Inhalation CliFF Baseline, 2020 — https://www.nasa.gov/wp-content/uploads/2026/08/smoke-inhalation-cliff.pdf

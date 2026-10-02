@@ -1,0 +1,64 @@
+id: diarrhea_gastroenteritis
+name: Diarrhea / Gastroenteritis
+aka: [stomach bug, food poisoning, loose stools, gastro]
+category: gastrointestinal
+urgency: routine
+# NASA IMM baseline (2020): 0.88 events per person-year in flight (40 / 45.49).
+prior: 0.08
+
+description: >
+  Loose or watery stools, often with belly cramps and sometimes nausea,
+  vomiting or a low fever. Most episodes on orbit lasted under a day.
+
+microgravity_note: >
+  The danger in space is fluid loss, not the bug. Crew already start with
+  less body fluid after the fluid shift, and NASA notes that judging how dry
+  someone is - and how they respond to IV fluids - is harder in microgravity.
+  Food is pre-screened and crew go through the Health Stabilization Program,
+  so an outbreak is unlikely, but if more than one crewmember is sick the
+  food or water system becomes the suspect and it is a vehicle problem.
+  Diarrhea in a waste-collection system without gravity is also an
+  operational and hygiene problem for the whole crew.
+
+findings:
+  - finding: diarrhea
+    weight: 3.0
+    absent_weight: -2.5
+  - finding: abdominal_cramping
+    weight: 1.2
+  - finding: nausea
+    weight: 0.6
+  - finding: vomiting
+    weight: 0.6
+  - finding: fever
+    weight: 0.6
+  - finding: others_affected
+    weight: 1.0
+    note: Two sick crewmembers points at food or water.
+  - finding: blood_in_stool
+    weight: 0.5
+    note: Small weight - blood is a red flag, not a typical stomach bug.
+  - finding: urine_output_low
+    weight: 0.3
+    note: A sign of dehydration - red flag.
+  - finding: presyncope
+    weight: 0.3
+  - finding: abdominal_pain_rlq
+    weight: -0.8
+    note: Pain that settles in the lower right is appendicitis until proven otherwise.
+
+red_flags: [blood_in_stool, urine_output_low, presyncope]
+
+recommend:
+  - Drink oral rehydration solution in small, frequent sips; track how much goes in and how much urine comes out.
+  - Rest, and eat bland food as you can tolerate it.
+  - Tell ground medical if anyone else on board is sick - food or water may need to be checked.
+  - Escalate for blood in the stool, very little urine, dizziness on moving, or diarrhea lasting more than 2 days.
+  - Do not take anti-diarrhea medicine without asking the flight surgeon if there is fever or blood.
+
+differential: [appendicitis, space_motion_sickness, constipation_adaptation]
+
+sources:
+  - title: "Diarrhea - NASA Integrated Medical Model CliFF Baseline (2020)"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/diarrhea-cliff.pdf"
+    note: 0.88 events per person-year in flight; most episodes under 24 hours; hydration assessment harder in microgravity.

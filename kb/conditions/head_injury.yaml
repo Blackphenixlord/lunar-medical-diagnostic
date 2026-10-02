@@ -1,0 +1,63 @@
+id: head_injury
+name: Head Injury / Concussion
+aka: [concussion, hit my head, TBI]
+category: trauma
+urgency: urgent
+# NASA IMM baseline (2020): 0.00042 per person-year (terrestrial trauma data;
+# NASA considers the on-orbit risk lower). Floored at 0.005.
+prior: 0.005
+
+description: >
+  A blow to the head. Most are minor bumps. A concussion causes headache,
+  confusion, nausea or memory gaps; a serious injury causes being knocked
+  out, repeated vomiting, worsening confusion or unequal pupils.
+
+microgravity_note: >
+  NASA considers the risk lower on orbit than on Earth: there are no falls
+  and impact forces are smaller in microgravity. But crew move large masses
+  by hand, translate quickly through hatches, and work around hard
+  structure, and a moving mass still has full momentum. A head injury on
+  orbit is hard to assess - there is no CT scanner - so the crew watch the
+  person closely and escalate on any warning sign.
+
+findings:
+  - finding: head_strike
+    weight: 3.0
+    absent_weight: -3.0
+    required: true
+    note: No blow to the head, no head injury. Physics, not judgement.
+  - finding: loss_of_consciousness
+    weight: 1.6
+  - finding: confusion
+    weight: 1.4
+  - finding: memory_gap
+    weight: 1.4
+  - finding: headache
+    weight: 1.0
+  - finding: vomiting
+    weight: 1.0
+  - finding: nausea
+    weight: 0.6
+  - finding: balance_impaired
+    weight: 0.8
+  - finding: diplopia
+    weight: 0.6
+  - finding: recent_decompression
+    weight: -0.8
+    note: Confusion after an EVA without a blow to the head is decompression sickness.
+
+red_flags: [loss_of_consciousness, confusion, vomiting, memory_gap]
+
+recommend:
+  - Stop work and have a crewmate stay with you. Do not be alone for the next 24 hours.
+  - Call ground medical if you were knocked out, are confused, vomited, or cannot remember what happened.
+  - Run the neurological check in the medical checklist (pupils, speech, strength, balance) and repeat it every few hours.
+  - Rest your brain - no EVA, no critical tasks, and limited screen time until cleared.
+  - Escalate immediately if the headache gets worse, vomiting repeats, you get drowsy, or one pupil looks bigger.
+
+differential: [decompression_sickness, tension_headache_co2]
+
+sources:
+  - title: "Head Injury - NASA Integrated Medical Model CliFF Baseline (2020)"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/head-injury-cliff.pdf"
+    note: 0.00042 per person-year from terrestrial trauma data; NASA considers microgravity somewhat protective because impact forces are minimized.

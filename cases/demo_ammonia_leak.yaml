@@ -1,0 +1,15 @@
+title: "FD 90 - ammonia smell, alarm, two crew with burning throats (must escalate)"
+narrative: >
+  Ammonia smell and an air-quality alarm. My throat burns, I am coughing and my
+  eyes are watering. The commander has the same. I am a bit short of breath.
+expect_top: toxic_inhalation
+expect_escalate: true
+observations:
+  chemical_exposure: true
+  throat_burning: true
+  cough: true
+  eye_watering: true
+  others_affected: true
+  shortness_of_breath: true
+  fever: 36.9
+  mission_elapsed_days: 90

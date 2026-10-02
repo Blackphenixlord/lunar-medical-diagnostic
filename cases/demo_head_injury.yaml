@@ -1,0 +1,13 @@
+title: "FD 45 - head strike on a hatch with a blackout (must escalate)"
+narrative: >
+  Hit my head on the hatch translating between modules. Blacked out for a
+  moment. Headache, and I cannot remember what happened just before. No EVA.
+expect_top: head_injury
+expect_escalate: true
+observations:
+  head_strike: true
+  loss_of_consciousness: true
+  memory_gap: true
+  headache: true
+  recent_decompression: false
+  mission_elapsed_days: 45

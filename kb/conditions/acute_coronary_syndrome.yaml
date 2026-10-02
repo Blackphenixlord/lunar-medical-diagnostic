@@ -1,0 +1,73 @@
+id: acute_coronary_syndrome
+name: Heart Attack or Angina (acute coronary syndrome)
+aka: [heart attack, MI, angina, cardiac chest pain]
+category: cardiovascular
+urgency: emergency
+# NASA IMM baseline (2020): 0.00063 per person-year (male), 0.00047 (female),
+# from terrestrial data - no in-flight chest pain events reported.
+# Floored at 0.003 so the backup engine can still surface it.
+prior: 0.003
+
+description: >
+  Not enough blood reaching the heart muscle. Pressure or squeezing pain in
+  the chest that can spread to the arm, jaw, neck or back, often with
+  sweating, shortness of breath or nausea. A heart attack is a life-threatening
+  emergency.
+
+microgravity_note: >
+  Astronauts are screened hard for heart disease and stay very fit, so NASA
+  has no record of in-flight chest pain from the heart and models the risk
+  from Earth data. It is rare - but missions are getting longer and crews
+  older, and the ISS cannot open a blocked artery. Several things that cause
+  chest pain on Earth behave differently on orbit: the fluid shift changes
+  heart size and blood pressure, and exercise on the treadmill or ARED is
+  the most likely time to unmask a heart problem. NASA models a heart attack
+  on orbit as an evacuation.
+
+findings:
+  - finding: chest_pain
+    weight: 2.4
+    absent_weight: -2.5
+  - finding: pain_radiates_arm_jaw
+    weight: 2.0
+  - finding: chest_pain_on_exertion
+    weight: 1.6
+  - finding: cold_sweat
+    weight: 1.4
+  - finding: shortness_of_breath
+    weight: 1.0
+  - finding: nausea
+    weight: 0.6
+  - finding: palpitations
+    weight: 0.6
+  - finding: presyncope
+    weight: 0.8
+  - finding: pain_worse_on_breathing
+    weight: -1.4
+    note: Sharp pain on breathing points to the lungs or chest wall.
+  - finding: chest_tender_to_touch
+    weight: -1.6
+    note: Pain you can reproduce by pressing is usually the chest wall.
+  - finding: cough
+    weight: -0.6
+  - finding: fever
+    weight: -0.8
+  - finding: neck_swelling
+    weight: -0.8
+    note: One-sided neck swelling with chest symptoms points to a jugular clot.
+
+red_flags: [cold_sweat, shortness_of_breath, presyncope, pain_radiates_arm_jaw]
+
+recommend:
+  - Stop all activity and call ground medical now.
+  - Record an ECG with the onboard monitor and send it to ground.
+  - Give oxygen and the aspirin from the medical kit only as directed by the flight surgeon.
+  - Have a crewmate stay with you and bring the AED (defibrillator) close.
+  - Note the time the pain started - it matters for every treatment decision.
+
+differential: [jugular_vte, toxic_inhalation, msk_back_pain_adaptation]
+
+sources:
+  - title: "Angina/Myocardial Infarction - NASA Integrated Medical Model CliFF Baseline (2020)"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/angina-myocardial-infarction-cliff.pdf"
+    note: 0.00063 (male) and 0.00047 (female) events per person-year; no in-flight chest pain events; worst case modelled as evacuation.
